@@ -6,6 +6,9 @@
 # Script to connect to Multicomp Pro MP730026 by BLE with the Bleak Module
 # Based on bleak example
 # Requires mpp730026_decode_bytearray.py to be in the same directory
+# 
+# Modified by Paulo Chiliguano (@pauloesteban)
+# 2021
 
 import logging
 import asyncio
@@ -16,15 +19,14 @@ from bleak import BleakClient
 from bleak import _logger as logger
 
 # Change this to your meter's address
-address = ("A5:B3:C2:24:15:16") # for Windows and Linux
-#address = ("4DA7C422-D3DE-4AE5-AF14-CFEBDD3B85D1") # for macOS
+address = ("EED8D6F6-8AB0-436D-AF7C-FF154F9E4040") # for macOS
 
-# This characteristic UUID is for the BDM / MP730026 BLE message
-# (do not change this)
-CHARACTERISTIC_UUID = "0000fff4-0000-1000-8000-00805f9b34fb"
+# This characteristic UUID is for the Heart Rate BLE message
+CHARACTERISTIC_UUID = "00400000-0001-11e1-ac36-0002a5d5c51b"
 
 def notification_handler(sender, data, debug=False):
-    """Simple notification handler which prints the data received."""
+    """Simple notification handler which prints the data received.
+    """
     #print("{0}: {1}".format(sender, data))
     if (debug): print("Handling...")
     if (debug): print("Data is " + str(type(data)))
@@ -53,7 +55,7 @@ async def run(address, loop, debug=False):
         logger.addHandler(h)
 
     async with BleakClient(address, loop=loop) as client:
-        x = await client.is_connected()
+        x = await client.is_connected
         logger.info("Connected: {0}".format(x))
 
         await client.start_notify(CHARACTERISTIC_UUID, notification_handler)
