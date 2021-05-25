@@ -55,7 +55,7 @@ async def run(address, loop, debug=False):
         logger.addHandler(h)
 
     async with BleakClient(address, loop=loop) as client:
-        x = await client.is_connected
+        x = await client.is_connected()
         logger.info("Connected: {0}".format(x))
 
         await client.start_notify(CHARACTERISTIC_UUID, notification_handler)
