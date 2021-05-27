@@ -24,7 +24,7 @@ from pythonosc import udp_client
 client = udp_client.SimpleUDPClient("127.0.0.1", 7400)
 
 # Change this to your meter's address
-address = ("EED8D6F6-8AB0-436D-AF7C-FF154F9E4040") # for macOS
+address = ("590E8F0B-DD3C-4A35-9889-755DCA9D66B9") # for macOS
 
 # This characteristic UUID is for the Heart Rate BLE message
 CHARACTERISTIC_UUID = "00400000-0001-11e1-ac36-0002a5d5c51b"
