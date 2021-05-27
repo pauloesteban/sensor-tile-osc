@@ -12,11 +12,16 @@
 
 import logging
 import asyncio
-import platform
-from mp730026_decode_bytearray import print_DMM_packet
+# import platform
+# from mp730026_decode_bytearray import print_DMM_packet
 
 from bleak import BleakClient
 from bleak import _logger as logger
+
+from pythonosc import udp_client
+
+
+client = udp_client.SimpleUDPClient("127.0.0.1", 7400)
 
 # Change this to your meter's address
 address = ("EED8D6F6-8AB0-436D-AF7C-FF154F9E4040") # for macOS
@@ -40,7 +45,11 @@ def notification_handler(sender, data, debug=False):
             print(hex(arr))
         print("")
     if (debug): print("... done handling")
-    print_DMM_packet(array)
+    # print_DMM_packet(array)
+    client.send_message("/gyro", array)
+    for arr in array:
+        print(hex(arr), end=" ")
+    print("\r")
 
 async def run(address, loop, debug=False):
     if debug:
@@ -65,6 +74,10 @@ async def run(address, loop, debug=False):
 
 if __name__ == "__main__":
     import os
+    import sys
+
+    if len(sys.argv) >= 2:
+        address = str(sys.argv[1])
 
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
 
