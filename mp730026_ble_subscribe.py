@@ -26,8 +26,9 @@ client = udp_client.SimpleUDPClient("127.0.0.1", 7400)
 # Change this to your meter's address
 address = ("590E8F0B-DD3C-4A35-9889-755DCA9D66B9") # for macOS
 
-# This characteristic UUID is for the Heart Rate BLE message
-CHARACTERISTIC_UUID = "00400000-0001-11e1-ac36-0002a5d5c51b"
+# This characteristic UUID is for the COMBINED sensors
+# Accelerometer, magnetometer, gyroscope
+CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
 
 def notification_handler(sender, data, debug=False):
     """Simple notification handler which prints the data received.
