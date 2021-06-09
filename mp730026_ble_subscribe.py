@@ -24,7 +24,7 @@ from pythonosc import udp_client
 client = udp_client.SimpleUDPClient("127.0.0.1", 7400)
 
 # Change this to your meter's address
-address = ("590E8F0B-DD3C-4A35-9889-755DCA9D66B9") # for macOS
+address = ("1538B1C1-75DD-4EB0-86B4-6045A5B6D44B") # for macOS
 
 # This characteristic UUID is for the COMBINED sensors
 # Accelerometer, magnetometer, gyroscope
@@ -47,7 +47,7 @@ def notification_handler(sender, data, debug=False):
         print("")
     if (debug): print("... done handling")
     # print_DMM_packet(array)
-    client.send_message("/gyro", array)
+    client.send_message("/sensortile", array)
     for arr in array:
         print(hex(arr), end=" ")
     print("\r")
