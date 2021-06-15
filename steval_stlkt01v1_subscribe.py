@@ -85,6 +85,6 @@ if __name__ == "__main__":
         address = str(sys.argv[1])
 
     os.environ["PYTHONASYNCIODEBUG"] = str(1)
-
+    print('MetaBow BridgeApp v0.1.0')
     loop = asyncio.get_event_loop()
     loop.run_until_complete(run(address, loop, False))
