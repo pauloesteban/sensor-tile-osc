@@ -43,7 +43,6 @@ def notification_handler(sender, data, debug=False):
     if (debug): print("Handling...")
     if (debug): print("Data is " + str(type(data)))
     
-
     array = bytearray(data)
     
     if (debug): print(str(sender) + " : ", end="")
@@ -54,9 +53,8 @@ def notification_handler(sender, data, debug=False):
     if (debug): print("... done handling")
     # print_DMM_packet(array)
     client.send_message("/sensortile", array)
-    for arr in array:
-        print(hex(arr), end=" ")
-    print("\r")
+    
+    print(' '.join(map(hex, array)), end='\r')
 
 async def run(address, loop, debug=False):
     if debug:
