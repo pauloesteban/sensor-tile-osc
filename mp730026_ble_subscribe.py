@@ -8,6 +8,9 @@
 # Requires mpp730026_decode_bytearray.py to be in the same directory
 # 
 # Modified by Paulo Chiliguano (@pauloesteban)
+# Directed by Dr Roberto Alonso Trillo
+# Department of Music
+# Hong Kong Baptist University
 # 2021
 
 import logging
