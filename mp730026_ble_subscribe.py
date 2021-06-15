@@ -30,6 +30,9 @@ address = ("1538B1C1-75DD-4EB0-86B4-6045A5B6D44B") # for macOS
 # Accelerometer, magnetometer, gyroscope
 CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
 
+# Delay time
+DELAY_TIME = 10800
+
 def notification_handler(sender, data, debug=False):
     """Simple notification handler which prints the data received.
     """
@@ -69,7 +72,7 @@ async def run(address, loop, debug=False):
         logger.info("Connected: {0}".format(x))
 
         await client.start_notify(CHARACTERISTIC_UUID, notification_handler)
-        await asyncio.sleep(460.0, loop=loop)
+        await asyncio.sleep(DELAY_TIME, loop=loop)
         await client.stop_notify(CHARACTERISTIC_UUID)
 
 
