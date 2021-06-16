@@ -27,3 +27,7 @@ jobs:
     - name: Build with PyInstaller
       run: |
         pyinstaller --onefile steval_bridge.py
+    - uses: actions/upload-artifact@v2
+      with:
+        name: my-artifact
+        path: /Users/runner/work/sensor-tile-osc/sensor-tile-osc/dist/steval_bridge
