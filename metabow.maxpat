@@ -45,7 +45,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 456.0, 383.0, 150.0, 20.0 ],
-					"text" : "Sensor 3"
+					"text" : "Sensor 3 - Magnetometer"
 				}
 
 			}
@@ -56,7 +56,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 456.0, 326.0, 150.0, 20.0 ],
-					"text" : "Sensor 2"
+					"text" : "Sensor 2 - Gyroscope"
 				}
 
 			}
@@ -211,7 +211,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 456.0, 263.0, 150.0, 20.0 ],
-					"text" : "Sensor 1"
+					"text" : "Sensor 1 - Accelerometer"
 				}
 
 			}
