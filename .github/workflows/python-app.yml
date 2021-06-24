@@ -34,4 +34,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: steval_bridge
-        path: steval_bridge.tar
+        path: steval_bridge.tar.gz
