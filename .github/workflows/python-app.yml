@@ -30,7 +30,7 @@ jobs:
       run: |
         pyinstaller --onefile steval_bridge.py
     - name: Tar files
-      run: tar -cvzf steval_bridge.tar.gz -C /Users/runner/work/sensor-tile-osc/sensor-tile-osc/dist/steval_bridge .
+      run: tar -cvzf steval_bridge.tar.gz -C /Users/runner/work/sensor-tile-osc/sensor-tile-osc/dist/ metabow.maxpat
     - uses: actions/upload-artifact@v2
       with:
         name: steval_bridge
