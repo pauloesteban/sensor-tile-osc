@@ -13,8 +13,10 @@ on:
 
 jobs:
   build:
-
-    runs-on: macos-10.15
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, macos-10.15]
 
     steps:
     - uses: actions/checkout@v2
@@ -30,7 +32,7 @@ jobs:
       run: |
         pyinstaller --onefile steval_bridge.py
     - name: Tar files
-      run: tar -cvzf steval_bridge.tar.gz -C /Users/runner/work/sensor-tile-osc/sensor-tile-osc/dist/ . /Users/runner/work/sensor-tile-osc/sensor-tile-osc/metabow.maxpat
+      run: tar -cvzf steval_bridge.tar.gz -C /Users/runner/work/sensor-tile-osc/sensor-tile-osc/dist/ .
     - uses: actions/upload-artifact@v2
       with:
         name: steval_bridge
