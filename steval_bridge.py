@@ -36,7 +36,7 @@ address = ("2BAD5FC0-A19B-4CA9-96C2-8A1BE352D5BD") # for macOS
 CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
 
 # Delay time
-DELAY_TIME = 10
+DELAY_TIME = 10800
 
 def notification_handler(sender, data, debug=False):
     """Simple notification handler which prints the data received.
