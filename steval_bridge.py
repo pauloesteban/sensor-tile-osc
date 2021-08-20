@@ -78,8 +78,8 @@ async def run(address, loop, debug=False):
 
 
 if __name__ == "__main__":
-    import sys
-
+    import argparse
+    parser = argparse.ArgumentParser()
     if len(sys.argv) >= 2:
         address = str(sys.argv[1])
 
