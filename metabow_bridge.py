@@ -30,6 +30,7 @@ def notification_handler(sender, data, debug=False):
     """Simple notification handler
     """
     join_array = [int.from_bytes(data[i:i+2], byteorder='little', signed=True) for i in range(0, len(data) - 1, 2)]
+    simple_udp_client.send_message("/0/raw", join_array)
 
 
 async def discover_steval():
