@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, macos-11]
+        os: [macos-latest, macos-11, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -31,6 +31,9 @@ jobs:
     - name: Build with PyInstaller
       run: |
         pyinstaller --onefile metabow_bridge.py
+    - name: Show workspace
+      run: |
+        echo ${{runner.workspace}}
     - name: Tar files
       run: tar -cvzf metabow_bridge.tar.gz -C /Users/runner/work/sensor-tile-osc/sensor-tile-osc/dist/ .
     - uses: actions/upload-artifact@v2
