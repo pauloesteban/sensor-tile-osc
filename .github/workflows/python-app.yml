@@ -33,9 +33,9 @@ jobs:
         pyinstaller --onefile metabow_bridge.py
     - name: Show workspace
       run: |
-        echo ${{runner.workspace}}
+        echo 
     - name: Tar files
-      run: tar -cvzf metabow_bridge.tar.gz -C /Users/runner/work/sensor-tile-osc/sensor-tile-osc/dist/ .
+      run: tar -cvzf metabow_bridge.tar.gz -C ${{runner.workspace}}/sensor-tile-osc/dist/ .
     - uses: actions/upload-artifact@v2
       with:
         name: metabow_bridge ${{ matrix.os }}
