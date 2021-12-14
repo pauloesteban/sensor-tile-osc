@@ -32,7 +32,7 @@ jobs:
       run: |
         pyinstaller --onefile metabow_bridge.py
     - name: Tar files
-      run: tar -I 'xz -9' -cvf  metabow_bridge_${{ matrix.os }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+      run: tar --use-compress-program 'xz -9' -cvf  metabow_bridge_${{ matrix.os }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
     - uses: actions/upload-artifact@v2
       with:
         name: metabow_bridge_${{ matrix.os }}
