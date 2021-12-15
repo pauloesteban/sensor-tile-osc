@@ -38,6 +38,7 @@ async def discover_steval():
     devices = await discover()
     
     for d in devices:
+        print(d.address)
         if d.name == "AM1V330":
             return d.address  # TODO: Check in Windows
 
