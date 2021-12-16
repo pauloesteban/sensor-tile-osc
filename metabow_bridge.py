@@ -40,13 +40,14 @@ async def discover_steval():
     for d in devices:
         print(d.address)
         if d.name == "AM1V330":
-            return d.address  # TODO: Check in Windows
+            return d.address
 
 async def main():
     while True:
         address = await discover_steval()
         
         if address:
+            print("\033[92mYou are connected to AM1V330 (STEVAL)!")
             break
 
     async with BleakClient(str(address)) as client:
