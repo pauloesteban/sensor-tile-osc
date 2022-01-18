@@ -30,7 +30,7 @@ jobs:
         pip install bleak python-osc pyinstaller
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile metabow_bridge.py
+        pyinstaller -Fw metabow_bridge.py
     - name: Archive and compress files
       run: tar -czvf metabow_bridge_${{ matrix.os }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
     - uses: actions/upload-artifact@v2

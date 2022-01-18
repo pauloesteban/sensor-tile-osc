@@ -36,7 +36,7 @@ def notification_handler(sender, data, debug=False):
 async def discover_steval():
     await asyncio.sleep(1)
     devices = await discover()
-    
+    print(devices)
     for d in devices:
         print(d.address)
         if d.name == "AM1V330":
