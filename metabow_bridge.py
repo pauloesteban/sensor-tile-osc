@@ -18,10 +18,14 @@ from bleak import (
     discover,
 )
 
+from datetime import datetime
+
 from pythonosc import udp_client
 
 
 simple_udp_client = udp_client.SimpleUDPClient("127.0.0.1", 8888)
+today = datetime.today().isoformat()
+filename = f"{today}_steval.txt"
 CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
 DELAY_TIME = 10800
 
@@ -31,6 +35,9 @@ def notification_handler(sender, data, debug=False):
     """
     join_array = [int.from_bytes(data[i:i+2], byteorder='little', signed=True) for i in range(0, len(data) - 1, 2)]
     simple_udp_client.send_message("/0/raw", join_array)
+
+    with open(filename, 'a') as f:
+        f.write(join_array)
 
 
 async def discover_steval():
@@ -47,7 +54,7 @@ async def main():
         address = await discover_steval()
         
         if address:
-            print("\033[92mYou are connected to AM1V330 (STEVAL)!")
+            print("\033[92mYou are connected to AM1V330 (STEVAL)!\033[0m")
             break
 
     async with BleakClient(str(address)) as client:
