@@ -14,6 +14,8 @@
 # 2021
 
 import logging
+import os
+os.environ['PYTHONASYNCIODEBUG'] = "1"
 import asyncio
 # import platform
 # from mp730026_decode_bytearray import print_DMM_packet
@@ -24,10 +26,10 @@ from bleak import _logger as logger
 from pythonosc import udp_client
 
 
-client = udp_client.SimpleUDPClient("127.0.0.1", 7400)
+client = udp_client.SimpleUDPClient("127.0.0.1", 8888)
 
 # Change this to your meter's address
-address = ("1538B1C1-75DD-4EB0-86B4-6045A5B6D44B") # for macOS
+address = ("2BAD5FC0-A19B-4CA9-96C2-8A1BE352D5BD") # for macOS
 
 # This characteristic UUID is for the COMBINED sensors
 # Accelerometer, magnetometer, gyroscope
@@ -39,22 +41,20 @@ DELAY_TIME = 10800
 def notification_handler(sender, data, debug=False):
     """Simple notification handler which prints the data received.
     """
-    #print("{0}: {1}".format(sender, data))
-    if (debug): print("Handling...")
-    if (debug): print("Data is " + str(type(data)))
-    
     array = bytearray(data)
-    
-    if (debug): print(str(sender) + " : ", end="")
-    if (debug): 
-        for arr in array:
-            print(hex(arr))
-        print("")
-    if (debug): print("... done handling")
+    #print("{0}: {1}".format(sender, data))
+    if debug:
+        print("Handling...")
+        print("Data is " + str(type(data)))
+        print(str(sender) + " : ", end="")
+    # print(' '.join(map(hex, array)), end='\r')
+        #print("... done handling")
+    join_array = [int.from_bytes(data[i:i+2], byteorder='little', signed=True) for i in range(0, len(data) - 1, 2)]
+
     # print_DMM_packet(array)
-    client.send_message("/sensortile", array)
+    client.send_message("/0/raw", join_array)
     
-    print(' '.join(map(hex, array)), end='\r')
+    
 
 async def run(address, loop, debug=False):
     if debug:
@@ -78,13 +78,11 @@ async def run(address, loop, debug=False):
 
 
 if __name__ == "__main__":
-    import os
-    import sys
-
+    import argparse
+    parser = argparse.ArgumentParser()
     if len(sys.argv) >= 2:
         address = str(sys.argv[1])
 
-    os.environ["PYTHONASYNCIODEBUG"] = str(1)
-    print('MetaBow BridgeApp v0.1.0')
+    print('MetaBow BridgeApp v0.2.0')
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run(address, loop, False))
+    loop.run_until_complete(run(address, loop, True))

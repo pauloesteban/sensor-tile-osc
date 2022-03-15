@@ -5,31 +5,41 @@ name: Python application
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
     branches: [ main ]
 
 jobs:
   build:
-
-    runs-on: macos-10.15
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, macos-10.15, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python 3.9
       uses: actions/setup-python@v2
       with:
-        python-version: 3.8
+        python-version: 3.9
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        pip install -U pip setuptools wheel
         pip install bleak python-osc pyinstaller
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile steval_bridge.py
-    - name: Tar files
-      run: tar -cvf steval_bridge.tar /Users/runner/work/sensor-tile-osc/sensor-tile-osc/dist/steval_bridge
-    - uses: actions/upload-artifact@v2
+        pyinstaller -F metabow_bridge.py
+    - name: Archive and compress files
+      run: tar -czvf metabow_bridge_${{ matrix.os }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+    # - uses: actions/upload-artifact@v2
+      # with:
+        # name: metabow_bridge_${{ matrix.os }}
+        # path: metabow_bridge_${{ matrix.os }}.tar.gz
+    - uses: xresloader/upload-to-github-release@master
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       with:
-        name: steval_bridge
-        path: steval_bridge.tar
+        file: "*.tar.gz"
+        tags: false
+        verbose: true
