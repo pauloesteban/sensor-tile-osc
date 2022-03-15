@@ -37,7 +37,8 @@ def notification_handler(sender, data, debug=False):
     simple_udp_client.send_message("/0/raw", join_array)
 
     with open(filename, 'a') as f:
-        f.write(" ".join(str(e) for e in join_array))
+        join_str = " ".join(str(e) for e in join_array)
+        f.write(f"{join_str}\n")
 
 
 async def discover_steval():
