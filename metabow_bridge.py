@@ -37,13 +37,13 @@ def notification_handler(sender, data, debug=False):
     simple_udp_client.send_message("/0/raw", join_array)
 
     with open(filename, 'a') as f:
-        f.write(join_array)
+        f.write(" ".join(str(e) for e in join_array))
 
 
 async def discover_steval():
     await asyncio.sleep(1)
     devices = await discover()
-    print(devices)
+    
     for d in devices:
         print(d.address)
         if d.name == "AM1V330":
@@ -54,7 +54,7 @@ async def main():
         address = await discover_steval()
         
         if address:
-            print("\033[92mYou are connected to AM1V330 (STEVAL)!\033[0m")
+            print("\033[92mYou are connected to STEVAL/AM1V330!\033[0m")
             break
 
     async with BleakClient(str(address)) as client:
