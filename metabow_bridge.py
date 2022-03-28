@@ -24,8 +24,8 @@ from pythonosc import udp_client
 
 
 simple_udp_client = udp_client.SimpleUDPClient("127.0.0.1", 8888)
-today = datetime.today().isoformat()
-filename = f"{today}_steval.txt"
+now = datetime.now().strftime("%Y%m%d_%H%M%S")
+filename = f"{now}_steval.txt"
 CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
 DELAY_TIME = 10800
 
