@@ -5,7 +5,7 @@
 # MIT License
 # 2020
 # 
-# Modified by Paulo Chiliguano (@pauloesteban)
+# Modified by Paulo Chiliguano (@pauloesteban) and KA HO Wong
 # Directed by Dr Roberto Alonso Trillo
 # Department of Music - Hong Kong Baptist University
 # 2021
