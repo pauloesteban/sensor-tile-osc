@@ -13,13 +13,16 @@
 
 
 import asyncio
+from datetime import datetime
+from functools import partial
+from time import monotonic
 
 from bleak import (
     BleakClient,
+    BleakScanner,
     discover,
 )
 
-from datetime import datetime
 from pythonosc import udp_client
 
 from utils import int_list_from_bytearray
@@ -30,6 +33,18 @@ now = datetime.now().strftime("%Y%m%d_%H%M%S")
 filename = f"{now}_steval.txt"
 CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
 DELAY_TIME = 10800
+
+st_devices = {}
+
+
+def device_found(device, _):
+    if device.name == "AM1V330" or device.name == "Paulo's iPad":
+        print(f"\033[92m {device.name} found\033[0m")
+        st_devices[device.address] = device
+
+
+def callback(sender, data, device_number:int = 0):
+    print(sender, data, device_number)
 
 
 def notification_handler(sender, data, debug=False):
@@ -43,27 +58,22 @@ def notification_handler(sender, data, debug=False):
         f.write(f"{join_str}\n")
 
 
-async def discover_steval():
-    await asyncio.sleep(1)
-    devices = await discover()
-    
-    for d in devices:
-        print(d.address)
-        if d.name == "AM1V330":
-            return d.address
+async def connect_to_device(device):
+    async with BleakClient(device) as client:
+        print(f"\033[92mYou are connected to {device.name}\033[0m")
+        await client.start_notify(CHARACTERISTIC_UUID, callback)
+        while True:
+            await asyncio.sleep(1.0)
+        # await client.stop_notify(CHARACTERISTIC_UUID)
+
 
 async def main():
-    while True:
-        address = await discover_steval()
-        
-        if address:
-            print("\033[92mYou are connected to STEVAL/AM1V330!\033[0m")
-            break
-
-    async with BleakClient(str(address)) as client:
-        await client.start_notify(CHARACTERISTIC_UUID, notification_handler)
-        await asyncio.sleep(DELAY_TIME)
-        await client.stop_notify(CHARACTERISTIC_UUID)
+    scanner = BleakScanner()
+    scanner.register_detection_callback(device_found)
+    await scanner.start()
+    await asyncio.sleep(5.0)
+    await scanner.stop()
+    await asyncio.gather(*(connect_to_device(device) for _, device in st_devices.items()))
 
 
 if __name__ == '__main__':
