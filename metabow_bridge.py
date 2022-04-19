@@ -13,7 +13,7 @@
 
 
 import asyncio
-from datetime import datetime
+
 from functools import partial
 
 from bleak import (
@@ -23,16 +23,13 @@ from bleak import (
 
 from pythonosc import udp_client
 
-from utils import int_list_from_bytearray
+from utils import int_list_from_bytearray, log_file_path
 
 
 simple_udp_client = udp_client.SimpleUDPClient("127.0.0.1", 8888)
-now = datetime.now().strftime("%Y%m%d_%H%M%S")
-filename = f"{now}_steval.txt"
 CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
-
 st_devices = {}
-
+filename = log_file_path()
 
 def device_found(device, _):
     if device.name == "AM1V330":

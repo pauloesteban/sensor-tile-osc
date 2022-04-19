@@ -4,6 +4,10 @@
 # 2022
 
 
+from datetime import datetime
+from os import makedirs
+from os.path import expandvars, isdir, join
+from platform import system
 from typing import ByteString, List
 
 
@@ -62,3 +66,22 @@ def uint16_from_bytes(data: ByteString) -> int:
     """
 
     return int.from_bytes(data, byteorder='little', signed=False)
+
+
+def _create_folder_in_desktop(dir: str):
+    """
+    """
+    if not isdir(dir):
+        makedirs(dir)
+
+
+def log_file_path() -> str:
+    """
+    """
+
+    dir = join(expandvars(r"${HOME}"), "Desktop", "Metabow Logs")
+    _create_folder_in_desktop(dir)
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = join(dir, f"{now}_steval.txt")
+
+    return filename
