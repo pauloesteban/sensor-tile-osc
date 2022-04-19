@@ -78,8 +78,13 @@ def _create_folder_in_desktop(dir: str):
 def log_file_path() -> str:
     """
     """
+    if system() == "Windows":
+        homefolder = expandvars(r"$HOMEPATH")
+    else:
+        homefolder = expandvars(r"$HOME")
 
-    dir = join(expandvars(r"${HOME}"), "Desktop", "Metabow Logs")
+    dir = join(homefolder, "Desktop", "Metabow Logs")
+    
     _create_folder_in_desktop(dir)
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = join(dir, f"{now}_steval.txt")
