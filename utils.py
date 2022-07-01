@@ -28,7 +28,7 @@ def int_list_from_bytearray(data: ByteString) -> Array:
         A list of integers representing the timestamp and coordinates values
     """
     step = 2
-    timestamp = [datetime.now().strftime("%Y%m%d_%H%M%S"),]
+    timestamp = [datetime.now().strftime("%Y%m%d_%H%M%S.%f"),]
     sensor_data = [int16_from_bytes(data[i:i+step]) for i in range(step, len(data) - 1, step)]
 
     return timestamp + sensor_data
