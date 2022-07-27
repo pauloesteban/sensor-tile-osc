@@ -16,6 +16,8 @@ import asyncio
 from datetime import datetime
 from functools import partial
 
+from functools import partial
+
 from bleak import (
     BleakClient,
     BleakScanner,
