@@ -13,6 +13,8 @@
 
 
 import asyncio
+from datetime import datetime
+from functools import partial
 
 from functools import partial
 
@@ -22,14 +24,16 @@ from bleak import (
 )
 
 from pythonosc import udp_client
-
-from utils import int_list_from_bytearray, log_file_path
+from gesture_model import GestureModel
+from utils import bytearray_to_fusion_data, log_file_path
 
 
 simple_udp_client = udp_client.SimpleUDPClient("127.0.0.1", 8888)
 CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
 st_devices = {}
 filename = log_file_path()
+model = GestureModel()
+
 
 def device_found(device, _):
     if device.name == "AM1V330":
@@ -40,12 +44,15 @@ def device_found(device, _):
 def notification_handler(device_number:int, sender: int, data: bytearray):
     """Simple notification handler
     """
-    join_array = int_list_from_bytearray(data)
+    join_array = bytearray_to_fusion_data(data)
     simple_udp_client.send_message(f"/{device_number}/raw", join_array)
-
+    model.tick(join_array[1:4], join_array[4:7], join_array[7:10])
+    simple_udp_client.send_message(f"/{device_number}/quaternion", model.quaternion.elements.tolist())
+    simple_udp_client.send_message(f"/{device_number}/motion_acceleration/sensor_frame", model.movement_acceleration.tolist())
+    
     with open(filename, 'a') as f:
-        join_str = " ".join(str(e) for e in join_array)
-        f.write(f"{device_number} {join_str}\n")
+        join_str = " ".join(str(e) for e in join_array[1:])
+        f.write(f'{device_number} {datetime.now().strftime("%Y%m%d_%H%M%S.%f")} {join_str}\n')
 
 
 async def connect_to_device(i, device):
