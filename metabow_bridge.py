@@ -10,13 +10,12 @@
 # Modified by james lewis (@baldengineer)
 # MIT License
 # 2020
-
-
 import asyncio
+import tkinter as tk
+
 from datetime import datetime
 from functools import partial
-
-from functools import partial
+from typing import Union  # For later use with type hint on running loop, see below
 
 from bleak import (
     BleakClient,
@@ -24,6 +23,7 @@ from bleak import (
 )
 
 from pythonosc import udp_client
+
 from gesture_model import GestureModel
 from utils import bytearray_to_fusion_data, log_file_path
 
@@ -73,5 +73,64 @@ async def main():
     await asyncio.gather(*(connect_to_device(i, device) for i, (_, device) in enumerate(st_devices.items())))
 
 
+class Window(tk.Tk):
+    def __init__(self, loop: asyncio.unix_events._UnixSelectorEventLoop):  # Maybe different type hint on Windows
+        self.root = tk.Tk()
+        self.loop = loop
+        self.scanner = BleakScanner()
+
+        title = tk.Label(text="METABOW OSC BRIDGE")
+        title.grid(row=0, columnspan=2, padx=(8, 8), pady=(16, 0))
+
+        start_scan_button = tk.Button(
+            text="Start Scan",
+            width=10,
+            command=lambda: self.loop.create_task(self.start_scan()),
+        )
+        
+        start_scan_button.grid(row=1, column=0, sticky=tk.W, padx=8, pady=8)
+
+        stop_scan_button = tk.Button(
+            text="Stop Scan",
+            width=10,
+            command=lambda: self.loop.create_task(self.stop_scan()),
+        )
+
+        stop_scan_button.grid(row=1, column=1, sticky=tk.W, padx=8, pady=8)
+
+        self.resultsContents = tk.StringVar()
+        self.devices = tk.Label(textvariable=self.resultsContents)
+        self.devices.grid(row=2, columnspan=2, padx=(8, 8), pady=(16, 0))
+        self.resultContents.set("A")
+        # entries = tk.Entry(
+        #     self.root,
+        #     textvariable="test"
+        # )
+
+        # entries.grid(row=3, sticky=tk.W, padx=8, pady=8)
+
+
+    async def show(self):
+        while True:
+            self.root.update()
+            await asyncio.sleep(0.01)
+
+    
+    async def start_scan(self):
+        self.scanner.register_detection_callback(device_found)
+        await self.scanner.start()
+        await asyncio.sleep(3.0)
+    
+
+    async def stop_scan(self):
+        await self.scanner.stop()
+
+
+async def metabow():
+    window = Window(asyncio.get_running_loop())
+    await window.show()
+
+
 if __name__ == '__main__':
-    asyncio.run(main())
+
+    asyncio.run(metabow())
