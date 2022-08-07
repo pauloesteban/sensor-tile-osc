@@ -37,8 +37,9 @@ model = GestureModel()
 
 def device_found(device, _):
     if device.name == "AM1V330":
-        print(f"\033[92m {device.name} found\033[0m")
-        st_devices[device.address] = device
+        print(f"{device.__dict__}\033[92m found\033[0m {type(device)}")
+
+        st_devices[device.address] = device  # bleak.backends.device.BLEDevice
 
 
 def notification_handler(device_number:int, sender: int, data: bytearray):
@@ -76,11 +77,29 @@ async def main():
 class Window(tk.Tk):
     def __init__(self, loop: asyncio.unix_events._UnixSelectorEventLoop):  # Maybe different type hint on Windows
         self.root = tk.Tk()
+        self.root.resizable(False, False)
+
         self.loop = loop
         self.scanner = BleakScanner()
 
         title = tk.Label(text="METABOW OSC BRIDGE")
-        title.grid(row=0, columnspan=2, padx=(8, 8), pady=(16, 0))
+        title.grid(row=0, columnspan=4, padx=(8, 8), pady=(16, 0))
+
+        title = tk.Label(text="OSC Port")
+        title.grid(row=1, column=0, padx=(8, 8), pady=(8, 8))
+
+        osc_port = tk.Entry(
+            self.root,
+        )
+
+        osc_port.grid(row=1, column=1, sticky=tk.W, padx=8, pady=8)
+
+        title = tk.Label(text="Devices")
+        title.grid(row=2, column=0, padx=(8, 8), pady=(16, 0))
+
+        self.devices = tk.Listbox()
+        self.devices.grid(row=3, rowspan=4, columnspan=3, padx=8, pady=8)
+        self.devices.insert(0, "Please press Start Scan...")
 
         start_scan_button = tk.Button(
             text="Start Scan",
@@ -88,7 +107,7 @@ class Window(tk.Tk):
             command=lambda: self.loop.create_task(self.start_scan()),
         )
         
-        start_scan_button.grid(row=1, column=0, sticky=tk.W, padx=8, pady=8)
+        start_scan_button.grid(row=3, column=3, sticky=tk.W, padx=8, pady=8)
 
         stop_scan_button = tk.Button(
             text="Stop Scan",
@@ -96,34 +115,42 @@ class Window(tk.Tk):
             command=lambda: self.loop.create_task(self.stop_scan()),
         )
 
-        stop_scan_button.grid(row=1, column=1, sticky=tk.W, padx=8, pady=8)
+        stop_scan_button.grid(row=4, column=3, sticky=tk.W, padx=8, pady=8)
 
-        self.resultsContents = tk.StringVar()
-        self.devices = tk.Label(textvariable=self.resultsContents)
-        self.devices.grid(row=2, columnspan=2, padx=(8, 8), pady=(16, 0))
-        self.resultContents.set("A")
-        # entries = tk.Entry(
-        #     self.root,
-        #     textvariable="test"
-        # )
-
-        # entries.grid(row=3, sticky=tk.W, padx=8, pady=8)
+        connect_button = tk.Button(
+            text="Connect",
+            width=10,
+            # command=lambda: self.loop.create_task(self.start_scan()),
+        )
+        
+        connect_button.grid(row=5, column=3, sticky=tk.W, padx=8, pady=8)
 
 
     async def show(self):
         while True:
             self.root.update()
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.1)
 
     
     async def start_scan(self):
         self.scanner.register_detection_callback(device_found)
         await self.scanner.start()
-        await asyncio.sleep(3.0)
+        await self.populate_devices()
+        await asyncio.sleep(1.0)
     
 
     async def stop_scan(self):
         await self.scanner.stop()
+        await self.populate_devices()
+
+
+    async def populate_devices(self):
+        self.devices.delete(0, 'end')
+
+        for k in st_devices:
+            self.devices.insert('end', k)
+
+        await asyncio.sleep(1.0)
 
 
 async def metabow():
