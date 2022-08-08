@@ -83,9 +83,6 @@ class Window(tk.Tk):
         self.loop = loop
         self.scanner = BleakScanner()
 
-        title = tk.Label(text="METABOW OSC BRIDGE")
-        title.grid(row=0, columnspan=4, padx=(8, 8), pady=(16, 0))
-
         title = tk.Label(text="OSC Port")
         title.grid(row=1, column=0, padx=(8, 8), pady=(8, 8))
 
