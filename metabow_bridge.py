@@ -75,8 +75,9 @@ async def main():
 
 
 class Window(tk.Tk):
-    def __init__(self, loop: asyncio.unix_events._UnixSelectorEventLoop):  # Maybe different type hint on Windows
+    def __init__(self, loop: asyncio.unix_events._UnixSelectorEventLoop):  # Delete when building on Windows
         self.root = tk.Tk()
+        self.root.title("Metabow OSC bridge")
         self.root.resizable(False, False)
 
         self.loop = loop
