@@ -9,6 +9,7 @@
 """
 import numpy as np
 from pyquaternion import Quaternion
+from typing import List
 from calibrator import Calibrator
 from fusion_filter import FusionFilter
 
@@ -30,7 +31,7 @@ class GestureModel():
         self.calibrator = Calibrator()
         self.fusion_filter = FusionFilter()
 
-    def tick(self, accl, gyro, magn):
+    def tick(self, accl: List[float], gyro: List[float], magn: List[float]):
         self.caccl = self.calibrator.calibrate_accl(accl)
         self.cgyro = self.calibrator.calibrate_gyro(gyro)
         self.cmagn = self.calibrator.calibrate_magn(magn)
