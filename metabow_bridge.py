@@ -64,6 +64,12 @@ class Window(tk.Tk):
         self.is_notify_loop = True
         self.destroy = False
 
+        try:
+            self.scanner = BleakScanner(self.device_detected)
+        except BleakError:
+            showerror("Error", "Bluetooth device is turned off.")
+            self.destroy = True
+
     
     def on_exit(self):
         if askyesno("Exit", "Do you want to quit the application?"):
@@ -197,13 +203,6 @@ class Window(tk.Tk):
 
     
     async def show(self):
-        try:
-            self.scanner = BleakScanner(self.device_detected)
-        except BleakError:
-            showerror("Error", "Bluetooth device is turned off")
-            self.root.destroy()
-            return
-        
         while not self.destroy:
             if self.refresh_listbox:
                 self.populate_devices()
