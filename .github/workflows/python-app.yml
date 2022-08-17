@@ -29,7 +29,7 @@ jobs:
         pip install numpy pyquaternion bleak python-osc pyinstaller
     - name: Build with PyInstaller
       run: |
-        pyinstaller -F metabow_bridge.spec
+        pyinstaller metabow_bridge.spec
     - name: Archive and compress files
       run: tar -czvf metabow_bridge_${{ matrix.os }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
     # - uses: actions/upload-artifact@v2
