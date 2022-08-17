@@ -10,7 +10,7 @@ import tkinter as tk
 from datetime import datetime
 from functools import partial
 from tkinter import ttk
-from tkinter.messagebox import YES, showerror, askyesno
+from tkinter.messagebox import showerror, askyesno
 from bleak import (
     BleakClient,
     BleakScanner,
@@ -25,25 +25,10 @@ from utils import bytearray_to_fusion_data, log_file_path
 LOCAL_ADDRESS = "127.0.0.1"
 UDP_PORT = 8888
 UDP_CLIENT = udp_client.SimpleUDPClient(LOCAL_ADDRESS, UDP_PORT)
-CHARACTERISTIC_UUID = "00E00000-0001-11E1-AC36-0002A5D5C51B"
 DEVICE_NAME = "AM1V330"
 AM1V330_DEVICES = {}
 LOG_NAME = log_file_path()
 MODEL = GestureModel()
-
-
-def notification_handler(device_number:int, sender: int, data: bytearray):
-    """Simple notification handler
-    """
-    join_array = bytearray_to_fusion_data(data)
-    MODEL.tick(join_array[1:4], join_array[4:7], join_array[7:10])
-    UDP_CLIENT.send_message(f"/{device_number}/raw", join_array)
-    UDP_CLIENT.send_message(f"/{device_number}/quaternion", MODEL.quaternion.elements.tolist())
-    UDP_CLIENT.send_message(f"/{device_number}/motion_acceleration/sensor_frame", MODEL.movement_acceleration.tolist())
-    
-    # with open(LOG_NAME, 'a') as f:
-    #     join_str = " ".join(str(e) for e in join_array[1:])
-    #     f.write(f'{device_number} {datetime.now().strftime("%Y%m%d_%H%M%S.%f")} {join_str}\n')
 
 
 class Window(tk.Tk):
@@ -63,14 +48,23 @@ class Window(tk.Tk):
         self.selected_devices_keys = []
         self.is_notify_loop = True
         self.is_destroyed = False
+        self.characteristic_uuid = "00E00000-0001-11E1-AC36-0002A5D5C51B"
+        self._instantiate_udp_client()
+        self._instantiate_scanner()
 
+    
+    def _instantiate_scanner(self):
         try:
             self.scanner = BleakScanner(self.device_detected)
         except BleakError:
             showerror("Error", "Bluetooth device is turned off.")
             self.is_destroyed = True
 
-    
+
+    def _instantiate_udp_client(self):
+        pass
+
+
     def on_exit(self):
         if askyesno("Exit", "Do you want to quit the application?"):
             self.is_destroyed = True
@@ -181,10 +175,10 @@ class Window(tk.Tk):
     
     async def notify(self, i, device):
         async with BleakClient(device) as client:
-            await client.start_notify(CHARACTERISTIC_UUID, partial(notification_handler, i))
+            await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, i))
             while self.is_notify_loop:
                 await asyncio.sleep(1.0)
-            await client.stop_notify(CHARACTERISTIC_UUID)
+            await client.stop_notify(self.characteristic_uuid)
 
 
     async def disconnect(self):
@@ -192,6 +186,20 @@ class Window(tk.Tk):
         self.port0_spinbox.state(['!disabled'])
         self.disconnect_button.state(['disabled'])
         await asyncio.sleep(1.0)
+
+
+    def notification_handler(self, device_number:int, sender: int, data: bytearray):
+        """Simple notification handler
+        """
+        join_array = bytearray_to_fusion_data(data)
+        MODEL.tick(join_array[1:4], join_array[4:7], join_array[7:10])
+        UDP_CLIENT.send_message(f"/{device_number}/raw", join_array)
+        UDP_CLIENT.send_message(f"/{device_number}/quaternion", MODEL.quaternion.elements.tolist())
+        UDP_CLIENT.send_message(f"/{device_number}/motion_acceleration/sensor_frame", MODEL.movement_acceleration.tolist())
+        
+        # with open(LOG_NAME, 'a') as f:
+        #     join_str = " ".join(str(e) for e in join_array[1:])
+        #     f.write(f'{device_number} {datetime.now().strftime("%Y%m%d_%H%M%S.%f")} {join_str}\n')
 
 
     def populate_devices(self):
