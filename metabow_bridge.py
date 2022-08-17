@@ -10,7 +10,7 @@ import tkinter as tk
 from datetime import datetime
 from functools import partial
 from tkinter import ttk
-from tkinter.messagebox import showerror
+from tkinter.messagebox import YES, showerror, askyesno
 from bleak import (
     BleakClient,
     BleakScanner,
@@ -51,21 +51,23 @@ class Window(tk.Tk):
         self.root = tk.Tk()
         self.root.title("Metabow OSC bridge")
         self.root.resizable(False, False)
+        self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
         self.loop = loop
-        
-        
         self.port0 = tk.StringVar()
         self.port0.set(8888)
         self.ports_frame = self.create_ports_frame(self.root)
         self.ports_frame.grid(column=0, row=0, padx=10, pady=10, sticky=tk.NW)
-        
         self.devices_frame = self.create_scanner_frame(self.root)
         self.devices_frame.grid(column=1, row=0, padx=10, pady=10)
         self.refresh_listbox = False
-
         self.selected_devices_keys = []
-
         self.is_notify_loop = True
+        self.destroy = False
+
+    
+    def on_exit(self):
+        if askyesno("Exit", "Do you want to quit the application?"):
+            self.destroy = True
 
 
     def create_ports_frame(self, container):
@@ -202,17 +204,20 @@ class Window(tk.Tk):
             self.root.destroy()
             return
         
-        while True:
+        while not self.destroy:
             if self.refresh_listbox:
                 self.populate_devices()
             self.root.update()
             await asyncio.sleep(0.1)
 
+        self.root.destroy()
 
-async def metabow():
-    window = Window(asyncio.get_running_loop())
-    await window.show()
+
+class App:
+    async def metabow(self):
+        self.window = Window(asyncio.get_running_loop())
+        await self.window.show()
 
 
 if __name__ == '__main__':
-    asyncio.run(metabow())
+    asyncio.run(App().metabow())
