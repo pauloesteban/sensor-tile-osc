@@ -62,18 +62,18 @@ class Window(tk.Tk):
         self.refresh_listbox = False
         self.selected_devices_keys = []
         self.is_notify_loop = True
-        self.destroy = False
+        self.is_destroyed = False
 
         try:
             self.scanner = BleakScanner(self.device_detected)
         except BleakError:
             showerror("Error", "Bluetooth device is turned off.")
-            self.destroy = True
+            self.is_destroyed = True
 
     
     def on_exit(self):
         if askyesno("Exit", "Do you want to quit the application?"):
-            self.destroy = True
+            self.is_destroyed = True
 
 
     def create_ports_frame(self, container):
@@ -203,7 +203,7 @@ class Window(tk.Tk):
 
     
     async def show(self):
-        while not self.destroy:
+        while not self.is_destroyed:
             if self.refresh_listbox:
                 self.populate_devices()
             self.root.update()
