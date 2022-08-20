@@ -5,12 +5,12 @@ name: Python application
 
 on:
   push:
-    branches:
-      - develop
-    # tags:
-    #   - 'v*'
-  pull_request:
-    branches: [ main ]
+    # branches:
+    #   - develop
+    tags:
+      - 'v*'
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   create_release:
