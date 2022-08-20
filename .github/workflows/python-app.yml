@@ -52,20 +52,22 @@ jobs:
           pip install -U pip wheel
           pip install numpy pyquaternion bleak python-osc pyinstaller
 
-      - name: Build executable
+      # - name: Build executable
+      #   run: |
+      #     pyinstaller --clean metabow_bridge.spec
+      #     tar -czvf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+
+      - name: Mac archive and compress
+        if: matrix.os == 'mac-latest'
+        run: |
+          pyinstaller metabow_bridge.spec
+          tar -cJvf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+
+      - name: Windows archive and compress
+        if: matrix.os == 'windows-latest'
         run: |
           pyinstaller --clean metabow_bridge.spec
           tar -czvf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
-
-      # - name: Mac archive and compress
-      #   if: matrix.os == 'mac-latest'
-      #   run: |
-      #     tar -czvf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
-
-      # - name: Windows archive and compress
-      #   if: matrix.os == 'windows-latest'
-      #   run: |
-      #     tar -czvf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
 
       - name: Release
         uses: softprops/action-gh-release@v1
