@@ -71,7 +71,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.create_release.outputs.tag-name }}
-          files: metabow_bridge_${{ matrix.release_suffix }}.tar.xz
+          files: metabow_bridge_${{ matrix.release_suffix }}
       
         # - uses: actions/upload-artifact@v2
         #   with:
