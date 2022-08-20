@@ -23,7 +23,7 @@ from utils import bytearray_to_fusion_data, log_file_path
 
 
 class Window(tk.Tk):
-    def __init__(self, loop: asyncio.unix_events._UnixSelectorEventLoop):  # Delete type hint when building on Windows
+    def __init__(self, loop):  # Delete type hint when building on Windows
         self.root = tk.Tk()
         self.root.title("Metabow OSC bridge")
         self.root.resizable(False, False)
