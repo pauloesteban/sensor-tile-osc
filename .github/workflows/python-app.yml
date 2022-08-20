@@ -63,12 +63,14 @@ jobs:
       - name: Windows build
         if: matrix.os == 'windows-latest'
         run: |
+          pyinstaller metabow_bridge.spec
           cd ${{ runner.workspace }}/sensor-tile-osc/dist/
           dir
 
       - name: Ubuntu build
         if: matrix.os == 'ubuntu-latest'
         run: |
+          pyinstaller metabow_bridge.spec
           cd ${{ runner.workspace }}/sensor-tile-osc/dist/
           ls -al
 
