@@ -69,7 +69,8 @@ jobs:
       - name: Ubuntu build
         if: matrix.os == 'ubuntu-latest'
         run: |
-          ls -al .dist/
+          cd dist
+          ls -al
 
       - name: Release
         uses: softprops/action-gh-release@v1
