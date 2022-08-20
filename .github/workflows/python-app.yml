@@ -31,14 +31,12 @@ jobs:
     needs: create_release
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-latest, windows-latest]
         include:
           - os: macos-latest
             release_suffix: mac
           - os: windows-latest
             release_suffix: windows
-          - os: ubuntu-latest
-            release_suffix: ubuntu
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
@@ -58,6 +56,7 @@ jobs:
         if: matrix.os == 'mac-latest'
         run: |
           pyinstaller metabow_bridge.spec
+          ls -al ${{ runner.workspace }}/sensor-tile-osc/dist/
           tar -czvf metabow_bridge_${{ matrix.release_suffix }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ bridge.app
 
       - name: Windows build
@@ -66,13 +65,6 @@ jobs:
           pyinstaller metabow_bridge.spec
           cd ${{ runner.workspace }}/sensor-tile-osc/dist/
           dir
-
-      - name: Ubuntu build
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          pyinstaller metabow_bridge.spec
-          cd ${{ runner.workspace }}/sensor-tile-osc/dist/
-          ls -al
 
       - name: Release
         uses: softprops/action-gh-release@v1
