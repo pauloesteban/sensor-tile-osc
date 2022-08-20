@@ -65,13 +65,13 @@ jobs:
       - name: Windows build
         if: matrix.os == 'windows-latest'
         run: |
-          tar -czvf metabow_bridge_${{ matrix.release_suffix }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+          tar -cJvf metabow_bridge_${{ matrix.release_suffix }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.create_release.outputs.tag-name }}
-          files: metabow_bridge_${{ matrix.release_suffix }}.tar.gz
+          files: metabow_bridge_${{ matrix.release_suffix }}.tar.xz
       
         # - uses: actions/upload-artifact@v2
         #   with:
