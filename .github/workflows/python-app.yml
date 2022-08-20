@@ -54,22 +54,18 @@ jobs:
 
       - name: Archive and compress
         run: |
-          pyinstaller metabow_bridge.spec
-          tar -czvf metabow_bridge_${{ matrix.release_suffix }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+          pyinstaller --clean metabow_bridge.spec
+      #     tar -czvf metabow_bridge_${{ matrix.release_suffix }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
 
-      # - name: Mac build
-      #   if: matrix.os == 'mac-latest'
-      #   run: |
-      #     pyinstaller metabow_bridge.spec
-      #     ls -al ${{ runner.workspace }}/sensor-tile-osc/dist/
-      #     tar -czvf metabow_bridge_${{ matrix.release_suffix }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ bridge.app
+      - name: Mac build
+        if: matrix.os == 'mac-latest'
+        run: |
+          tar -czvf metabow_bridge_${{ matrix.release_suffix }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/ bridge.app/
 
-      # - name: Windows build
-      #   if: matrix.os == 'windows-latest'
-      #   run: |
-      #     pyinstaller metabow_bridge.spec
-      #     cd ${{ runner.workspace }}/sensor-tile-osc/dist/
-      #     dir
+      - name: Windows build
+        if: matrix.os == 'windows-latest'
+        run: |
+          tar -czvf metabow_bridge_${{ matrix.release_suffix }}.tar.gz -C ${{ runner.workspace }}/sensor-tile-osc/dist/bridge bridge.exe
 
       - name: Release
         uses: softprops/action-gh-release@v1
