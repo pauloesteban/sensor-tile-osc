@@ -22,15 +22,6 @@ from gesture_model import GestureModel
 from utils import bytearray_to_fusion_data, log_file_path
 
 
-LOCAL_ADDRESS = "127.0.0.1"
-UDP_PORT = 8888
-UDP_CLIENT = udp_client.SimpleUDPClient(LOCAL_ADDRESS, UDP_PORT)
-DEVICE_NAME = "AM1V330"
-AM1V330_DEVICES = {}
-LOG_NAME = log_file_path()
-MODEL = GestureModel()
-
-
 class Window(tk.Tk):
     def __init__(self, loop: asyncio.unix_events._UnixSelectorEventLoop):  # Delete type hint when building on Windows
         self.root = tk.Tk()
@@ -49,7 +40,10 @@ class Window(tk.Tk):
         self.is_notify_loop = True
         self.is_destroyed = False
         self.characteristic_uuid = "00E00000-0001-11E1-AC36-0002A5D5C51B"
-        self._instantiate_udp_client()
+        self.device_name = "AM1V330"
+        self.AM1V330_devices = {}
+        self.log_name = log_file_path()
+        self.model = GestureModel()
         self._instantiate_scanner()
 
     
@@ -62,7 +56,8 @@ class Window(tk.Tk):
 
 
     def _instantiate_udp_client(self):
-        pass
+        self.LOCAL_ADDRESS = "127.0.0.1"
+        self.udp_client = udp_client.SimpleUDPClient(self.LOCAL_ADDRESS, int(self.port0.get()))
 
 
     def on_exit(self):
@@ -87,7 +82,7 @@ class Window(tk.Tk):
     def items_selected(self, event):
         selected_ix = self.devices_listbox.curselection()
         selected_devices_keys = [self.devices_listbox.get(i) for i in selected_ix]
-        self.selected_devices = [AM1V330_DEVICES[i] for i in selected_devices_keys]
+        self.selected_devices = [self.AM1V330_devices[i] for i in selected_devices_keys]
 
     
     def create_scanner_frame(self, container):
@@ -139,8 +134,8 @@ class Window(tk.Tk):
 
     
     async def device_detected(self, device, _):
-        if device.name == DEVICE_NAME:
-            AM1V330_DEVICES[device.address] = device  # bleak.backends.device.BLEDevice
+        if device.name == self.device_name:
+            self.AM1V330_devices[device.address] = device  # bleak.backends.device.BLEDevice
         await asyncio.sleep(1.0)
 
 
@@ -167,6 +162,8 @@ class Window(tk.Tk):
             return
         self.is_notify_loop = True
         self.port0_spinbox.state(['disabled'])
+        self._instantiate_udp_client()
+        self.start_scan_button.state(['disabled'])
         self.connect_button.state(['disabled'])
         self.disconnect_button.state(['!disabled'])
         self.devices_listbox.config(state=tk.DISABLED)
@@ -185,6 +182,7 @@ class Window(tk.Tk):
         self.is_notify_loop = False
         self.port0_spinbox.state(['!disabled'])
         self.disconnect_button.state(['disabled'])
+        self.start_scan_button.state(['!disabled'])
         await asyncio.sleep(1.0)
 
 
@@ -192,21 +190,21 @@ class Window(tk.Tk):
         """Simple notification handler
         """
         join_array = bytearray_to_fusion_data(data)
-        MODEL.tick(join_array[1:4], join_array[4:7], join_array[7:10])
-        UDP_CLIENT.send_message(f"/{device_number}/raw", join_array)
-        UDP_CLIENT.send_message(f"/{device_number}/quaternion", MODEL.quaternion.elements.tolist())
-        UDP_CLIENT.send_message(f"/{device_number}/motion_acceleration/sensor_frame", MODEL.movement_acceleration.tolist())
+        self.model.tick(join_array[1:4], join_array[4:7], join_array[7:10])
+        self.udp_client.send_message(f"/{device_number}/raw", join_array)
+        self.udp_client.send_message(f"/{device_number}/quaternion", self.model.quaternion.elements.tolist())
+        self.udp_client.send_message(f"/{device_number}/motion_acceleration/sensor_frame", self.model.movement_acceleration.tolist())
         
-        # with open(LOG_NAME, 'a') as f:
+        # with open(self.log_name, 'a') as f:
         #     join_str = " ".join(str(e) for e in join_array[1:])
         #     f.write(f'{device_number} {datetime.now().strftime("%Y%m%d_%H%M%S.%f")} {join_str}\n')
 
 
     def populate_devices(self):
-        if len(AM1V330_DEVICES):
+        if len(self.AM1V330_devices):
             self.devices_listbox.delete(0, 'end')
 
-            for k, v in AM1V330_DEVICES.items():
+            for k, v in self.AM1V330_devices.items():
                 self.devices_listbox.insert('end', k)
 
     
