@@ -14,7 +14,42 @@ from typing import ByteString, List
 Array = List[int]
 
 
-def int_list_from_bytearray(data: ByteString) -> Array:
+def bytearray_to_fusion_data(data: ByteString) -> List[float]:
+    """Converts a bytearray to a list of float numbers
+
+    Parameters
+    ----------
+    data : bytearray
+        bytes from BLE device
+
+    Returns
+    -------
+    list
+        A list of floats representing the timestamp and coordinates values
+    """
+    raw_list = _int_list_from_bytearray(data)
+    raw_list[4:7] = _scale_gyroscope_coordinates(raw_list[4:7])
+
+    return [float(f'{i:.1f}') for i in raw_list]
+
+
+def _scale_gyroscope_coordinates(data: Array) -> Array:
+    """Scale gyroscope data 1/10x as it comes multiplied
+
+    Parameters
+    ----------
+    data : list
+        X, Y, Z coordinates data (int16 each)
+
+    Returns
+    -------
+    list
+        A list of floats corresponding to coordinates data of the Blue ST gyroscope
+    """
+    return [0.1*i for i in data]
+
+
+def _int_list_from_bytearray(data: ByteString) -> Array:
     """Converts a bytearray to a list of signed integers
 
     Parameters
@@ -28,7 +63,7 @@ def int_list_from_bytearray(data: ByteString) -> Array:
         A list of integers representing the timestamp and coordinates values
     """
     step = 2
-    timestamp = [datetime.now().strftime("%Y%m%d_%H%M%S.%f"),]
+    timestamp = [uint16_from_bytes(data[0:step]),]
     sensor_data = [int16_from_bytes(data[i:i+step]) for i in range(step, len(data) - 1, step)]
 
     return timestamp + sensor_data
@@ -87,6 +122,6 @@ def log_file_path() -> str:
     
     _create_folder_in_desktop(dir)
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = join(dir, f"{now}_steval.txt")
+    filename = join(dir, f"mb_{now}.csv")
 
     return filename
