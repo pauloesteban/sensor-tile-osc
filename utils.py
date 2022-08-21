@@ -122,6 +122,6 @@ def log_file_path() -> str:
     
     _create_folder_in_desktop(dir)
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = join(dir, f"{now}_steval.txt")
+    filename = join(dir, f"mb_{now}.csv")
 
     return filename

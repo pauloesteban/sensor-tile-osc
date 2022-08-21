@@ -6,6 +6,7 @@
 # 2022
 
 import asyncio
+import csv
 import tkinter as tk
 from datetime import datetime
 from functools import partial
@@ -42,9 +43,28 @@ class Window(tk.Tk):
         self.characteristic_uuid = "00E00000-0001-11E1-AC36-0002A5D5C51B"
         self.device_name = "AM1V330"
         self.AM1V330_devices = {}
-        self.log_name = log_file_path()
         self.model = GestureModel()
         self._instantiate_scanner()
+        self.csv_header = [
+            'ID',
+            'timestamp',
+            'accl_x',
+            'accl_y',
+            'accl_z',
+            'gyro_x',
+            'gyro_y',
+            'gyro_z',
+            'magn_x',
+            'magn_y',
+            'magn_z',
+            'q_w',
+            'q_x',
+            'q_y',
+            'q_z',
+            'accl_sensor_frame_x',
+            'accl_sensor_frame_y',
+            'accl_sensor_frame_z',
+        ]
 
     
     def _instantiate_scanner(self):
@@ -167,6 +187,7 @@ class Window(tk.Tk):
         self.connect_button.state(['disabled'])
         self.disconnect_button.state(['!disabled'])
         self.devices_listbox.config(state=tk.DISABLED)
+        self._create_csv_file()
         await asyncio.gather(*(self.notify(i, device) for i, device in enumerate(self.selected_devices)))
 
     
@@ -189,15 +210,18 @@ class Window(tk.Tk):
     def notification_handler(self, device_number:int, sender: int, data: bytearray):
         """Simple notification handler
         """
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S.%f")
         join_array = bytearray_to_fusion_data(data)
         self.model.tick(join_array[1:4], join_array[4:7], join_array[7:10])
         self.udp_client.send_message(f"/{device_number}/raw", join_array)
-        self.udp_client.send_message(f"/{device_number}/quaternion", self.model.quaternion.elements.tolist())
-        self.udp_client.send_message(f"/{device_number}/motion_acceleration/sensor_frame", self.model.movement_acceleration.tolist())
+        quaternion = self.model.quaternion.elements.tolist()
+        self.udp_client.send_message(f"/{device_number}/quaternion", quaternion)
+        movement_accl = self.model.movement_acceleration.tolist()
+        self.udp_client.send_message(f"/{device_number}/motion_acceleration/sensor_frame", movement_accl)
         
-        # with open(self.log_name, 'a') as f:
-        #     join_str = " ".join(str(e) for e in join_array[1:])
-        #     f.write(f'{device_number} {datetime.now().strftime("%Y%m%d_%H%M%S.%f")} {join_str}\n')
+        with open(self.log_name, 'a', encoding='UTF8') as f:
+            writer = csv.writer(f)
+            writer.writerow([device_number, timestamp, *join_array[1:], *quaternion, *movement_accl])
 
 
     def populate_devices(self):
@@ -206,6 +230,13 @@ class Window(tk.Tk):
 
             for k, v in self.AM1V330_devices.items():
                 self.devices_listbox.insert('end', k)
+
+    
+    def _create_csv_file(self):
+        self.log_name = log_file_path()
+        with open(self.log_name, 'w', encoding='UTF8') as f:
+            writer = csv.writer(f)
+            writer.writerow(self.csv_header)
 
     
     async def show(self):
