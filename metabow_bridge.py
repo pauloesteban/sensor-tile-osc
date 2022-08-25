@@ -36,6 +36,10 @@ class Window(tk.Tk):
         self.ports_frame.grid(column=0, row=0, padx=10, pady=10, sticky=tk.NW)
         self.devices_frame = self.create_scanner_frame(self.root)
         self.devices_frame.grid(column=1, row=0, padx=10, pady=10)
+        self.option_address = tk.StringVar()
+        self.option_address.set(0)
+        self.options_frame = self.create_options_frame(self.root)
+        self.options_frame.grid(column=0, row=1, padx=10, pady=10, sticky=tk.NW)
         self.refresh_listbox = False
         self.selected_devices_keys = []
         self.is_notify_loop = True
@@ -76,8 +80,12 @@ class Window(tk.Tk):
 
 
     def _instantiate_udp_client(self):
-        self.LOCAL_ADDRESS = "127.0.0.1"
-        self.udp_client = udp_client.SimpleUDPClient(self.LOCAL_ADDRESS, int(self.port0.get()))
+        localhost = "127.0.0.1"
+        self.udp_client = udp_client.SimpleUDPClient(localhost, int(self.port0.get()))
+
+
+    def _set_osc_message_addresses(self):
+        pass
 
 
     def on_exit(self):
@@ -95,6 +103,15 @@ class Window(tk.Tk):
         
         # for widget in frame.winfo_children():
         #     widget.grid(padx=0, pady=5)
+
+        return label_frame
+
+
+    def create_options_frame(self, container):
+        label_frame = ttk.Labelframe(container, text='Options', relief=tk.RIDGE)
+        label_frame.grid(row=0, column=0, sticky=tk.W)
+        self.address_checkbox = ttk.Checkbutton(label_frame, text="Use Device Identifier for OSC", variable=self.option_address)
+        self.address_checkbox.grid(row=0, column=0  , sticky=tk.W)
 
         return label_frame
 
@@ -182,6 +199,7 @@ class Window(tk.Tk):
             return
         self.is_notify_loop = True
         self.port0_spinbox.state(['disabled'])
+        self.address_checkbox.state(['disabled'])
         self._instantiate_udp_client()
         self.start_scan_button.state(['disabled'])
         self.connect_button.state(['disabled'])
@@ -204,10 +222,11 @@ class Window(tk.Tk):
         self.port0_spinbox.state(['!disabled'])
         self.disconnect_button.state(['disabled'])
         self.start_scan_button.state(['!disabled'])
+        self.address_checkbox.state(['!disabled'])
         await asyncio.sleep(1.0)
 
 
-    def notification_handler(self, device_number:int, sender: int, data: bytearray):
+    def notification_handler(self, device_number: int, sender: int, data: bytearray):
         """Simple notification handler
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S.%f")
