@@ -40,9 +40,12 @@ class Window(tk.Tk):
         self.option_address.set(0)
         self.options_frame = self.create_options_frame(self.root)
         self.options_frame.grid(column=0, row=1, padx=10, pady=10, sticky=tk.NW)
+        self.animation = "░▒▒▒▒▒▒▒▒▒"
+        self.monitoring_frame = self.create_monitoring_frame(self.root)
+        self.monitoring_frame.grid(column=1, row=1, padx=10, pady=10, sticky=tk.NW)
         self.refresh_listbox = False
         self.selected_devices_keys = []
-        self.is_notify_loop = True
+        self.is_notify_loop = False
         self.is_destroyed = False
         self.characteristic_uuid = "00E00000-0001-11E1-AC36-0002A5D5C51B"
         self.device_name = "AM1V330"
@@ -107,11 +110,21 @@ class Window(tk.Tk):
         label_frame = ttk.Labelframe(container, text='Options', relief=tk.RIDGE)
         label_frame.grid(row=0, column=0, sticky=tk.W)
         self.address_checkbox = ttk.Checkbutton(label_frame, text="Use Device Identifier for OSC", variable=self.option_address)
-        self.address_checkbox.grid(row=0, column=0  , sticky=tk.W)
+        self.address_checkbox.grid(row=0, column=0, sticky=tk.W)
 
         return label_frame
 
 
+    def create_monitoring_frame(self, container):
+        label_frame = ttk.Labelframe(container, text='Monitoring', relief=tk.RIDGE)
+        label_frame.grid(row=0, column=0, sticky=tk.W)
+        self.monitoring_label = ttk.Label(label_frame, text="")
+        self.monitoring_label.grid(row=0, column=0, sticky=tk.W)
+        self.monitoring_label.state(['disabled'])
+
+        return label_frame
+        
+    
     def items_selected(self, event):
         selected_ix = self.devices_listbox.curselection()
         selected_devices_keys = [self.devices_listbox.get(i) for i in selected_ix]
@@ -201,6 +214,7 @@ class Window(tk.Tk):
         self.connect_button.state(['disabled'])
         self.disconnect_button.state(['!disabled'])
         self.devices_listbox.config(state=tk.DISABLED)
+        self.monitoring_label.state(['!disabled'])
         self._create_csv_file()
         await asyncio.gather(*(self.notify(i, device) for i, device in enumerate(self.selected_devices)))
 
@@ -222,6 +236,7 @@ class Window(tk.Tk):
         self.disconnect_button.state(['disabled'])
         self.start_scan_button.state(['!disabled'])
         self.address_checkbox.state(['!disabled'])
+        self.monitoring_label.state(['disabled'])
         await asyncio.sleep(1.0)
 
 
@@ -265,6 +280,9 @@ class Window(tk.Tk):
         while not self.is_destroyed:
             if self.refresh_listbox:
                 self.populate_devices()
+            if self.is_notify_loop:
+                self.monitoring_label["text"] = self.animation
+                self.animation = self.animation[-1] + self.animation[:-1]
             self.root.update()
             await asyncio.sleep(0.1)
 
