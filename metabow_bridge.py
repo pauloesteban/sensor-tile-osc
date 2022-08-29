@@ -84,10 +84,6 @@ class Window(tk.Tk):
         self.udp_client = udp_client.SimpleUDPClient(localhost, int(self.port0.get()))
 
 
-    def _set_osc_message_addresses(self):
-        pass
-
-
     def on_exit(self):
         if askyesno("Exit", "Do you want to quit the application?"):
             self.is_destroyed = True
@@ -211,7 +207,10 @@ class Window(tk.Tk):
     
     async def notify(self, i, device):
         async with BleakClient(device) as client:
-            await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, i))
+            if self.option_address.get() == "0":
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, i))
+            elif self.option_address.get() == "1":
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, str(device.address)))
             while self.is_notify_loop:
                 await asyncio.sleep(1.0)
             await client.stop_notify(self.characteristic_uuid)
@@ -226,21 +225,25 @@ class Window(tk.Tk):
         await asyncio.sleep(1.0)
 
 
-    def notification_handler(self, device_number: int, sender: int, data: bytearray):
+    def notification_handler(self, device_number: int | str, sender: int, data: bytearray):
         """Simple notification handler
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S.%f")
+        address_raw = f"/{device_number}/raw"
+        address_quaternion = f"/{device_number}/quaternion"
+        address_sensor_frame = f"/{device_number}/motion_acceleration/sensor_frame"
         join_array = bytearray_to_fusion_data(data)
         self.model.tick(join_array[1:4], join_array[4:7], join_array[7:10])
-        self.udp_client.send_message(f"/{device_number}/raw", join_array)
         quaternion = self.model.quaternion.elements.tolist()
-        self.udp_client.send_message(f"/{device_number}/quaternion", quaternion)
         movement_accl = self.model.movement_acceleration.tolist()
-        self.udp_client.send_message(f"/{device_number}/motion_acceleration/sensor_frame", movement_accl)
+        self.udp_client.send_message(address_raw, join_array)
+        self.udp_client.send_message(address_quaternion, quaternion)
+        self.udp_client.send_message(address_sensor_frame, movement_accl)
+        row = [device_number, timestamp, *join_array[1:], *quaternion, *movement_accl]
         
         with open(self.log_name, 'a', encoding='UTF8') as f:
             writer = csv.writer(f)
-            writer.writerow([device_number, timestamp, *join_array[1:], *quaternion, *movement_accl])
+            writer.writerow(row)
 
 
     def populate_devices(self):
