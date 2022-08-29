@@ -36,9 +36,16 @@ class Window(tk.Tk):
         self.ports_frame.grid(column=0, row=0, padx=10, pady=10, sticky=tk.NW)
         self.devices_frame = self.create_scanner_frame(self.root)
         self.devices_frame.grid(column=1, row=0, padx=10, pady=10)
+        self.option_address = tk.StringVar()
+        self.option_address.set(0)
+        self.options_frame = self.create_options_frame(self.root)
+        self.options_frame.grid(column=0, row=1, padx=10, pady=10, sticky=tk.NW)
+        self.animation = "░▒▒▒▒▒▒▒▒▒"
+        self.monitoring_frame = self.create_monitoring_frame(self.root)
+        self.monitoring_frame.grid(column=1, row=1, padx=10, pady=10, sticky=tk.NW)
         self.refresh_listbox = False
         self.selected_devices_keys = []
-        self.is_notify_loop = True
+        self.is_notify_loop = False
         self.is_destroyed = False
         self.characteristic_uuid = "00E00000-0001-11E1-AC36-0002A5D5C51B"
         self.device_name = "AM1V330"
@@ -76,8 +83,8 @@ class Window(tk.Tk):
 
 
     def _instantiate_udp_client(self):
-        self.LOCAL_ADDRESS = "127.0.0.1"
-        self.udp_client = udp_client.SimpleUDPClient(self.LOCAL_ADDRESS, int(self.port0.get()))
+        localhost = "127.0.0.1"
+        self.udp_client = udp_client.SimpleUDPClient(localhost, int(self.port0.get()))
 
 
     def on_exit(self):
@@ -99,6 +106,25 @@ class Window(tk.Tk):
         return label_frame
 
 
+    def create_options_frame(self, container):
+        label_frame = ttk.Labelframe(container, text='Options', relief=tk.RIDGE)
+        label_frame.grid(row=0, column=0, sticky=tk.W)
+        self.address_checkbox = ttk.Checkbutton(label_frame, text="Use Device Identifier for OSC", variable=self.option_address)
+        self.address_checkbox.grid(row=0, column=0, sticky=tk.W)
+
+        return label_frame
+
+
+    def create_monitoring_frame(self, container):
+        label_frame = ttk.Labelframe(container, text='Monitoring', relief=tk.RIDGE)
+        label_frame.grid(row=0, column=0, sticky=tk.W)
+        self.monitoring_label = ttk.Label(label_frame, text="")
+        self.monitoring_label.grid(row=0, column=0, sticky=tk.W)
+        self.monitoring_label.state(['disabled'])
+
+        return label_frame
+        
+    
     def items_selected(self, event):
         selected_ix = self.devices_listbox.curselection()
         selected_devices_keys = [self.devices_listbox.get(i) for i in selected_ix]
@@ -182,18 +208,23 @@ class Window(tk.Tk):
             return
         self.is_notify_loop = True
         self.port0_spinbox.state(['disabled'])
+        self.address_checkbox.state(['disabled'])
         self._instantiate_udp_client()
         self.start_scan_button.state(['disabled'])
         self.connect_button.state(['disabled'])
         self.disconnect_button.state(['!disabled'])
         self.devices_listbox.config(state=tk.DISABLED)
+        self.monitoring_label.state(['!disabled'])
         self._create_csv_file()
         await asyncio.gather(*(self.notify(i, device) for i, device in enumerate(self.selected_devices)))
 
     
     async def notify(self, i, device):
         async with BleakClient(device) as client:
-            await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, i))
+            if self.option_address.get() == "0":
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, i))
+            elif self.option_address.get() == "1":
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, str(device.address)))
             while self.is_notify_loop:
                 await asyncio.sleep(1.0)
             await client.stop_notify(self.characteristic_uuid)
@@ -204,24 +235,30 @@ class Window(tk.Tk):
         self.port0_spinbox.state(['!disabled'])
         self.disconnect_button.state(['disabled'])
         self.start_scan_button.state(['!disabled'])
+        self.address_checkbox.state(['!disabled'])
+        self.monitoring_label.state(['disabled'])
         await asyncio.sleep(1.0)
 
 
-    def notification_handler(self, device_number:int, sender: int, data: bytearray):
+    def notification_handler(self, device_number: int | str, sender: int, data: bytearray):
         """Simple notification handler
         """
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S.%f")
+        address_raw = f"/{device_number}/raw"
+        address_quaternion = f"/{device_number}/quaternion"
+        address_sensor_frame = f"/{device_number}/motion_acceleration/sensor_frame"
         join_array = bytearray_to_fusion_data(data)
         self.model.tick(join_array[1:4], join_array[4:7], join_array[7:10])
-        self.udp_client.send_message(f"/{device_number}/raw", join_array)
         quaternion = self.model.quaternion.elements.tolist()
-        self.udp_client.send_message(f"/{device_number}/quaternion", quaternion)
         movement_accl = self.model.movement_acceleration.tolist()
-        self.udp_client.send_message(f"/{device_number}/motion_acceleration/sensor_frame", movement_accl)
+        self.udp_client.send_message(address_raw, join_array)
+        self.udp_client.send_message(address_quaternion, quaternion)
+        self.udp_client.send_message(address_sensor_frame, movement_accl)
+        row = [device_number, timestamp, *join_array[1:], *quaternion, *movement_accl]
         
         with open(self.log_name, 'a', encoding='UTF8') as f:
             writer = csv.writer(f)
-            writer.writerow([device_number, timestamp, *join_array[1:], *quaternion, *movement_accl])
+            writer.writerow(row)
 
 
     def populate_devices(self):
@@ -243,6 +280,9 @@ class Window(tk.Tk):
         while not self.is_destroyed:
             if self.refresh_listbox:
                 self.populate_devices()
+            if self.is_notify_loop:
+                self.monitoring_label["text"] = self.animation
+                self.animation = self.animation[-1] + self.animation[:-1]
             self.root.update()
             await asyncio.sleep(0.1)
 
