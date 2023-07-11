@@ -247,14 +247,20 @@ class Window(tk.Tk):
         address_raw = f"/{device_number}/raw"
         address_quaternion = f"/{device_number}/quaternion"
         address_sensor_frame = f"/{device_number}/motion_acceleration/sensor_frame"
+        address_sensor_derivative = f"/{device_number}/motion_acceleration/sensor_derivative"
+        address_sensor_velocity = f"/{device_number}/motion_acceleration/sensor_velocity"
         join_array = bytearray_to_fusion_data(data)
         self.model.tick(join_array[1:4], join_array[4:7], join_array[7:10])
         quaternion = self.model.quaternion.elements.tolist()
         movement_accl = self.model.movement_acceleration.tolist()
+        accl_derivative = self.model.acceleration_derivative.tolist()
+        movement_vel = self.model.movement_velocity.tolist()
         self.udp_client.send_message(address_raw, join_array)
         self.udp_client.send_message(address_quaternion, quaternion)
         self.udp_client.send_message(address_sensor_frame, movement_accl)
-        row = [device_number, timestamp, *join_array[1:], *quaternion, *movement_accl]
+        self.udp_client.send_message(address_sensor_derivative, accl_derivative) 
+        self.udp_client.send_message(address_sensor_velocity, movement_vel) 
+        row = [device_number, timestamp, *join_array[1:], *quaternion, *movement_accl, *accl_derivative, *movement_vel]
         
         with open(self.log_name, 'a', encoding='UTF8') as f:
             writer = csv.writer(f)
