@@ -48,7 +48,7 @@ jobs:
           python-version: "3.10"
           
       - name: Install dependencies
-        run: pip install -U wheel numpy pyquaternion bleak python-osc pyinstaller
+        run: pip install -U wheel numpy pyquaternion "bleak<0.16,>=0.12.1" python-osc "pyinstaller<5.4"
 
       - name: Build executable
         run: pyinstaller --clean metabow_bridge.spec
