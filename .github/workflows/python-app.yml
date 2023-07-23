@@ -52,7 +52,7 @@ jobs:
         run: pyinstaller --clean metabow_bridge.spec
 
       - name: Mac archive and compress
-        if: matrix.os == 'macos-11'
+        if: matrix.os == 'macos-13'
         run: tar -cJf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ bridge.app
 
       # - name: Windows archive and compress
