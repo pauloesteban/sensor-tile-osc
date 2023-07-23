@@ -40,18 +40,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.10"
+          python-version: "3.11"
           
       - name: Install dependencies
         run: |
           pip install -U wheel
           pip install -U numpy pyquaternion "bleak<0.16,>=0.12.1" python-osc "pyinstaller<5.4"
-
-      - name: import tkinter
-        run: python3 -c 'import tkinter'
 
       - name: Build executable
         run: pyinstaller --clean metabow_bridge.spec
