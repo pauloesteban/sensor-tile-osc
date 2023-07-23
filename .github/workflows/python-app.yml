@@ -29,9 +29,9 @@ jobs:
     needs: create_release
     strategy:
       matrix:
-        os: [macos-13, ]
+        os: [macos-latest, ]
         include:
-          - os: macos-13
+          - os: macos-latest
             release_suffix: mac.tar.xz
           # - os: windows-latest
           #   release_suffix: windows.tar.gz
@@ -48,11 +48,17 @@ jobs:
       - name: Install dependencies
         run: pip install -U wheel numpy pyquaternion "bleak<0.16,>=0.12.1" python-osc "pyinstaller<5.4"
 
+      - name: Install dependencies
+        run: |
+          brew install tcl-tk |
+          export TCL_LIBRARY=/usr/local/opt/tcl-tk/lib/tcl8.6
+
+
       - name: Build executable
         run: pyinstaller --clean metabow_bridge.spec
 
       - name: Mac archive and compress
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-latest'
         run: tar -cJf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ bridge.app
 
       # - name: Windows archive and compress
