@@ -46,13 +46,12 @@ jobs:
           python-version: "3.10"
           
       - name: Install dependencies
-        run: pip install -U wheel numpy pyquaternion "bleak<0.16,>=0.12.1" python-osc "pyinstaller<5.4"
-
-      - name: Install dependencies
         run: |
-          brew install tcl-tk |
-          export TCL_LIBRARY=/usr/local/opt/tcl-tk/lib/tcl8.6
+          pip install -U wheel
+          pip install -U numpy pyquaternion "bleak<0.16,>=0.12.1" python-osc "pyinstaller<5.4"
 
+      - name: import tkinter
+        run: python3 -c 'import tkinter'
 
       - name: Build executable
         run: pyinstaller --clean metabow_bridge.spec
