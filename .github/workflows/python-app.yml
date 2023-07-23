@@ -5,8 +5,8 @@ name: Python application
 
 on:
   push:
-    # branches:
-    #   - develop
+    branches:
+      - test/github_actions_update
     tags:
       - 'v*'
   # pull_request:
@@ -31,9 +31,9 @@ jobs:
     needs: create_release
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-11, ]
         include:
-          - os: macos-latest
+          - os: macos-11
             release_suffix: mac.tar.xz
           - os: windows-latest
             release_suffix: windows.tar.gz
@@ -52,32 +52,17 @@ jobs:
 
       - name: Build executable
         run: pyinstaller --clean metabow_bridge.spec
-          # tar -czvf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
 
       - name: Mac archive and compress
-        if: matrix.os == 'macos-latest'
-        run: tar -cJf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ bridge.app
+        if: matrix.os == 'macos-11'
+        run: tar -cJf metabow_bridge_${{ matrix.release_suffix }} -C ${{ github.workspace }}/sensor-tile-osc/dist/ bridge.app
 
       - name: Windows archive and compress
         if: matrix.os == 'windows-latest'
-        run: tar -czf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+        run: tar -czf metabow_bridge_${{ matrix.release_suffix }} -C ${{ github.workspace }}/sensor-tile-osc/dist/ .
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.create_release.outputs.tag-name }}
           files: metabow_bridge_${{ matrix.release_suffix }}
-      
-        # - uses: actions/upload-artifact@v2
-        #   with:
-        #     name: metabow_bridge_${{ matrix.os }}
-        #     path: metabow_bridge_${{ matrix.os }}.tar.gz
-
-      # - name: Upload to GH release
-      #   uses: xresloader/upload-to-github-release@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
-      #   with:
-      #     file: "*.tar.gz"
-      #     tags: false
-      #     verbose: true
