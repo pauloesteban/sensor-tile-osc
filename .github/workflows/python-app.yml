@@ -29,9 +29,9 @@ jobs:
     needs: create_release
     strategy:
       matrix:
-        os: [macos-11, ]
+        os: [macos-13, ]
         include:
-          - os: macos-11
+          - os: macos-13
             release_suffix: mac.tar.xz
           # - os: windows-latest
           #   release_suffix: windows.tar.gz
