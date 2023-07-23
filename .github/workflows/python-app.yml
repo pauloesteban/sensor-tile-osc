@@ -47,8 +47,8 @@ jobs:
           
       - name: Install dependencies
         run: |
-          pip install -U wheel
-          pip install -U numpy pyquaternion "bleak<0.16,>=0.12.1" python-osc "pyinstaller<5.4"
+          pip install -U wheel pip setuptools
+          pip install -U numpy pyquaternion python-osc "bleak<0.21,>=0.12.1" "pyinstaller<5.14"
 
       - name: Build executable
         run: pyinstaller --clean metabow_bridge.spec
