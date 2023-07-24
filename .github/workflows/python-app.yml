@@ -48,10 +48,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -U wheel pip setuptools
-          pip install -U numpy pyquaternion python-osc "bleak<0.21,>=0.12.1" "pyinstaller<5.14"
+          pip install -r requirements.txt
+          pip install -U "pyinstaller<5.14,>=5.5"
 
       - name: Build executable
-        run: pyinstaller --clean metabow_bridge.spec
+        run: pyinstaller --clean metabow_bridge.spec --noconfirm
 
       - name: Mac archive and compress
         if: matrix.os == 'macos-latest'
