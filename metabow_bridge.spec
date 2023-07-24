@@ -53,7 +53,7 @@ app = BUNDLE(
     name='bridge.app',
     icon=None,
     bundle_identifier='com.metabow.bridge',
-    version='1.0.0',
+    version='1.2.0',
     info_plist={
         'NSBluetoothAlwaysUsageDescription': 'This app uses Bluetooth.'
     }

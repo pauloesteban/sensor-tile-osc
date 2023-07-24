@@ -5,8 +5,6 @@ name: Python application
 
 on:
   push:
-    # branches:
-    #   - develop
     tags:
       - 'v*'
   # pull_request:
@@ -31,53 +29,41 @@ jobs:
     needs: create_release
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-latest, ]
         include:
           - os: macos-latest
             release_suffix: mac.tar.xz
-          - os: windows-latest
-            release_suffix: windows.tar.gz
+          # - os: windows-latest
+          #   release_suffix: windows.tar.gz
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
+      - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.10"
+          python-version: "3.11"
           
       - name: Install dependencies
-        run: pip install -U wheel numpy pyquaternion "bleak<0.16,>=0.12.1" python-osc "pyinstaller<5.4"
+        run: |
+          pip install -U wheel pip setuptools
+          pip install -r requirements.txt
+          pip install -U "pyinstaller<5.14,>=5.5"
 
       - name: Build executable
-        run: pyinstaller --clean metabow_bridge.spec
-          # tar -czvf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+        run: pyinstaller --clean metabow_bridge.spec --noconfirm
 
       - name: Mac archive and compress
         if: matrix.os == 'macos-latest'
         run: tar -cJf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ bridge.app
 
-      - name: Windows archive and compress
-        if: matrix.os == 'windows-latest'
-        run: tar -czf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
+      # - name: Windows archive and compress
+      #   if: matrix.os == 'windows-latest'
+      #   run: tar -czf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.create_release.outputs.tag-name }}
           files: metabow_bridge_${{ matrix.release_suffix }}
-      
-        # - uses: actions/upload-artifact@v2
-        #   with:
-        #     name: metabow_bridge_${{ matrix.os }}
-        #     path: metabow_bridge_${{ matrix.os }}.tar.gz
-
-      # - name: Upload to GH release
-      #   uses: xresloader/upload-to-github-release@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}
-      #   with:
-      #     file: "*.tar.gz"
-      #     tags: false
-      #     verbose: true
