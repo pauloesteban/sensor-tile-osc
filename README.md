@@ -15,11 +15,44 @@ Download the compressed file accordingly from the [Releases](https://github.com/
 sudo xattr -r -d com.apple.quarantine bridge.app
 ```
 
+## Build from source
+
 ### Windows
 
-- Uncompress the `tar.gz` file into a folder of your preference.
-- Add a Windows security [exclusion](https://support.microsoft.com/en-us/windows/add-an-exclusion-to-windows-security-811816c0-4dfd-af4a-47e4-c301afe13b26) to the `bridge` folder.
-- Execute `bridge.exe`
+- Install [Chocolatey](https://chocolatey.org/install#individual).
+- Install Python 3.11 via Chocolatey
+
+```
+choco install python311
+```
+
+- Create a virtual environment with [venv](https://docs.python.org/3.11/library/venv.html) and activate it.
+
+- Install requirements
+
+```
+python -m pip install -r requirements.txt
+python -m pip install -U "pyinstaller<5.14,>=5.5"
+```
+
+- Make the PyInstaller spec file
+
+```
+pyi-makespec --onefile --windowed metabow_bridge.py
+```
+
+- Build the executable
+
+```
+pyinstaller --clean metabow_bridge.spec --noconfirm
+```
+
+#### EV Signing
+
+```
+signtool sign /tr http://timestamp.sectigo.com /td sha256 /a sensor-tile-osc\dist\metabow_bridge.exe
+```
+
 
 ## References
 
