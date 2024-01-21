@@ -20,7 +20,7 @@ class Calibrator():
 
         # NOTE: the gyro is not yet calibrated in pyMIMU
         self.gyro_transform = self.DEG_RAD_RATIO * np.identity(3)
-        
+
         self.magn_transform = np.identity(3)
 
     def calibrate(self, vector_measurement, matrix_transform, vector_bias):

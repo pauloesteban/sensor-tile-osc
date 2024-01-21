@@ -119,7 +119,7 @@ def log_file_path() -> str:
         homefolder = expandvars(r"$HOME")
 
     dir = join(homefolder, "Desktop", "Metabow Logs")
-    
+
     _create_folder_in_desktop(dir)
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = join(dir, f"mb_{now}.csv")

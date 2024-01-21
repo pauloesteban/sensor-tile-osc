@@ -60,7 +60,7 @@ class FusionFilter(BaseFilter):
         self.anm1       = np.zeros(3)
         self.aa         = np.zeros(3)
         self.gyro_bias = np.zeros(3)
-        
+
 
     def set_gyro_bias_alpha(self, v):
         self.galpha = v
