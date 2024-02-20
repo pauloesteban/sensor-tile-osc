@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-# Modified by Paulo Chiliguano (@pauloesteban) and KA HO Wong
+# Developed by Paulo Chiliguano and KA HO Wong
 # Directed by Dr Roberto Alonso Trillo
-# Department of Music - Hong Kong Baptist University
-# 2023
+# HKBU Academy of Music
+# 2024
 
 import asyncio
 import csv
@@ -21,7 +21,7 @@ from bleak.exc import BleakError
 
 from pythonosc import udp_client
 from gesture_model import GestureModel
-from utils import bytearray_to_fusion_data, log_file_path
+from utils import bytearray_to_fusion_data, log_file_path, pyquaternion_as_spherical_coords
 
 
 class FusionThread(threading.Thread):
@@ -330,8 +330,11 @@ class Window(tk.Tk):
 
     def _send_messages(self, device_number, udp_client, model):
         address_quaternion = f"/{device_number}/quaternion"
-        quaternion = model.quaternion.elements.tolist()
+        elements = model.quaternion.elements
+        quaternion = elements.tolist()
         udp_client.send_message(address_quaternion, quaternion)
+        spherical_coords = pyquaternion_as_spherical_coords(elements)
+        udp_client.send_message(f"/{device_number}/spherical_coords", spherical_coords.tolist())
         address_sensor_frame = f"/{device_number}/motion_acceleration/sensor_frame"
         movement_accl = model.movement_acceleration.tolist()
         udp_client.send_message(address_sensor_frame, movement_accl)
