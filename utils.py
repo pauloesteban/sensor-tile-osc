@@ -1,9 +1,10 @@
-# Created by Paulo Chiliguano (@pauloesteban)
+# Developed by Paulo Chiliguano
 # Directed by Dr Roberto Alonso Trillo
 # Department of Music - Hong Kong Baptist University
-# 2022
+# 2024
 
 
+import quaternion
 from datetime import datetime
 from os import makedirs
 from os.path import expandvars, isdir, join
@@ -118,10 +119,15 @@ def log_file_path() -> str:
     else:
         homefolder = expandvars(r"$HOME")
 
-    dir = join(homefolder, "Desktop", "Metabow Logs")
-    
-    _create_folder_in_desktop(dir)
+    log_dir = join(homefolder, "Desktop", "Metabow Logs")
+
+    _create_folder_in_desktop(log_dir)
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = join(dir, f"mb_{now}.csv")
+    filename = join(log_dir, f"mb_{now}.csv")
 
     return filename
+
+
+def pyquaternion_as_spherical_coords(elements):
+    elems = quaternion.from_float_array(elements)
+    return quaternion.as_spherical_coords(elems)

@@ -1,9 +1,10 @@
 
 
-# Modified by Paulo Chiliguano and Travis West
+# Modified by Paulo Chiliguano
+# Developed by Travis West
 # Directed by Dr Roberto Alonso Trillo
-# Department of Music - Hong Kong Baptist University
-# 2022
+# HKBU Academy of Music
+# 2024
 
 """Gesture model
 """

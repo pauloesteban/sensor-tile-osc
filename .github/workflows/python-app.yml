@@ -23,7 +23,7 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: false
-          
+
   build:
     name: Build Release
     needs: create_release
@@ -44,7 +44,7 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.11"
-          
+
       - name: Install dependencies
         run: |
           pip install -U wheel pip setuptools

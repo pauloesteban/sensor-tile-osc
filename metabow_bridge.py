@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-# Modified by Paulo Chiliguano (@pauloesteban) and KA HO Wong
+# Developed by Paulo Chiliguano and KA HO Wong
 # Directed by Dr Roberto Alonso Trillo
-# Department of Music - Hong Kong Baptist University
-# 2023
+# HKBU Academy of Music
+# 2024
 
 import asyncio
 import csv
@@ -21,7 +21,7 @@ from bleak.exc import BleakError
 
 from pythonosc import udp_client
 from gesture_model import GestureModel
-from utils import bytearray_to_fusion_data, log_file_path
+from utils import bytearray_to_fusion_data, log_file_path, pyquaternion_as_spherical_coords
 
 
 class FusionThread(threading.Thread):
@@ -97,7 +97,7 @@ class Window(tk.Tk):
             'accl_roll'
         ]
 
-    
+
     def _instantiate_scanner(self):
         try:
             self.scanner = BleakScanner(self.device_detected)
@@ -122,7 +122,7 @@ class Window(tk.Tk):
     def create_ports_frame(self, container):
         label_frame = ttk.Labelframe(container, text='UDP Ports', relief=tk.RIDGE)
         label_frame.grid(row=0, column=0, sticky=tk.W)
-        title = ttk.Label(label_frame, text=f"Device Port:")
+        title = ttk.Label(label_frame, text="Device Port:")
         title.grid(row=0, column=0, sticky=tk.W)
         self.port0_spinbox = ttk.Spinbox(label_frame,
                                          from_=1024,
@@ -130,7 +130,7 @@ class Window(tk.Tk):
                                          textvariable=self.port0,
                                          width=10)
         self.port0_spinbox.grid(row=0, column=1, sticky=tk.W)
-        title1 = ttk.Label(label_frame, text=f"Mirror Port:")
+        title1 = ttk.Label(label_frame, text="Mirror Port:")
         title1.grid(row=1, column=0, sticky=tk.W)
         self.port1_spinbox = ttk.Spinbox(label_frame,
                                          from_=1024,
@@ -159,14 +159,14 @@ class Window(tk.Tk):
         self.monitoring_label.state(['disabled'])
 
         return label_frame
-        
-    
+
+
     def items_selected(self, event):
         selected_ix = self.devices_listbox.curselection()
         selected_devices_keys = [self.devices_listbox.get(i) for i in selected_ix]
         self.selected_devices = [self.AM1V330_devices[i] for i in selected_devices_keys]
 
-    
+
     def create_scanner_frame(self, container):
         label_frame = ttk.Labelframe(container, text='Devices', relief=tk.RIDGE)
         label_frame.grid(row=0, column=0, sticky=tk.W)
@@ -214,7 +214,7 @@ class Window(tk.Tk):
 
         return label_frame
 
-    
+
     async def device_detected(self, device, _):
         if device.name == self.device_name:
             self.AM1V330_devices[device.address] = device  # bleak.backends.device.BLEDevice
@@ -229,7 +229,7 @@ class Window(tk.Tk):
         self.stop_scan_button.state(['!disabled'])
         self.connect_button.state(['disabled'])
         self.refresh_listbox = True
-    
+
 
     async def stop_scan(self):
         self.start_scan_button.state(['!disabled'])
@@ -255,7 +255,7 @@ class Window(tk.Tk):
         self._create_csv_file()
         await asyncio.gather(*(self.notify(i, device) for i, device in enumerate(self.selected_devices)))
 
-    
+
     async def notify(self, i, device):
         async with BleakClient(device) as client:
             if self.option_address.get() == "0":
@@ -309,7 +309,7 @@ class Window(tk.Tk):
         else:
             self._send_messages(device_number, self.udp_client, self.model)
         write_thread.join()
-        
+
 
     def _write_log(self, timestamp, device_number, fusion_data, model):
         data = [device_number,
@@ -322,7 +322,7 @@ class Window(tk.Tk):
                 model.skewness,
                 model.tilt,
                 model.roll]
-        
+
         with open(self.log_name, 'a', encoding='UTF8') as f:
             writer = csv.writer(f)
             writer.writerow(data)
@@ -330,8 +330,11 @@ class Window(tk.Tk):
 
     def _send_messages(self, device_number, udp_client, model):
         address_quaternion = f"/{device_number}/quaternion"
-        quaternion = model.quaternion.elements.tolist()
+        elements = model.quaternion.elements
+        quaternion = elements.tolist()
         udp_client.send_message(address_quaternion, quaternion)
+        spherical_coords = pyquaternion_as_spherical_coords(elements)
+        udp_client.send_message(f"/{device_number}/spherical_coords", spherical_coords.tolist())
         address_sensor_frame = f"/{device_number}/motion_acceleration/sensor_frame"
         movement_accl = model.movement_acceleration.tolist()
         udp_client.send_message(address_sensor_frame, movement_accl)
@@ -359,14 +362,14 @@ class Window(tk.Tk):
             for k, v in self.AM1V330_devices.items():
                 self.devices_listbox.insert('end', k)
 
-    
+
     def _create_csv_file(self):
         self.log_name = log_file_path()
         with open(self.log_name, 'w', encoding='UTF8') as f:
             writer = csv.writer(f)
             writer.writerow(self.csv_header)
 
-    
+
     async def show(self):
         while not self.is_destroyed:
             if self.refresh_listbox:
