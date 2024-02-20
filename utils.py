@@ -5,7 +5,6 @@
 
 
 import quaternion
-import numpy as np
 from datetime import datetime
 from os import makedirs
 from os.path import expandvars, isdir, join
