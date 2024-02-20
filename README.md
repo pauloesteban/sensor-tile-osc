@@ -62,4 +62,4 @@ signtool sign /tr http://timestamp.sectigo.com /td sha256 /a sensor-tile-osc\dis
 
 Developed by Paulo Chiliguano, Travis West and KA HO Wong.
 
-Conducted by Roberto Alonso Trillo @ HKBU Department of Music.
+Conducted by Dr Roberto Alonso Trillo @ HKBU Academy of Music.
