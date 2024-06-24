@@ -8,9 +8,11 @@
 import asyncio
 import csv
 import threading
+import tomllib
 import tkinter as tk
 from datetime import datetime
 from functools import partial
+from pathlib import Path
 from tkinter import ttk
 from tkinter.messagebox import showerror, askyesno
 from bleak import (
@@ -62,8 +64,10 @@ class Window(tk.Tk):
         self.selected_devices_keys = []
         self.is_notify_loop = False
         self.is_destroyed = False
-        self.characteristic_uuid = "00E00000-0001-11E1-AC36-0002A5D5C51B"
-        self.device_name = "AM1V330"
+        self.configuration_path = Path("metabow.toml")
+        self.configuration_dict = tomllib.loads(self.configuration_path.read_text())
+        self.characteristic_uuid = self.configuration_dict['device']['characteristic-uuid']
+        self.device_name = self.configuration_dict['device']['name']
         self.AM1V330_devices = {}
         self.model = GestureModel()
         self._instantiate_scanner()
@@ -259,9 +263,9 @@ class Window(tk.Tk):
     async def notify(self, i, device):
         async with BleakClient(device) as client:
             if self.option_address.get() == "0":
-                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, i))
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler_for_nordic, i))
             elif self.option_address.get() == "1":
-                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, str(device.address)))
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler_for_nordic, str(device.address)))
             while self.is_notify_loop:
                 await asyncio.sleep(1.0)
             await client.stop_notify(self.characteristic_uuid)
@@ -277,6 +281,12 @@ class Window(tk.Tk):
         self.monitoring_label.state(['disabled'])
         await asyncio.sleep(1.0)
 
+
+    def notification_handler_for_nordic(self, device_number: int | str, sender: int, data: bytearray):
+        """Used as a proof-of-concept
+        """
+        print(len(data))
+    
 
     def notification_handler(self, device_number: int | str, sender: int, data: bytearray):
         """Simple notification handler

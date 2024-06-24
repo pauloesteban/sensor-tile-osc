@@ -1,21 +1,54 @@
-# SensorTile Bridge App
+# Metabow Bridge App
 
-Cross-platform application to pair STEVAL-STLCX01V1 BLE devices to send sensor data via OSC (Open Sound Control) messages.
+Cross-platform application to pair "Metabow IMU" to send sensor data via OSC (Open Sound Control) messages.
 
-## Installation
+## Build from source (Recommended)
 
-Download the compressed file accordingly from the [Releases](https://github.com/pauloesteban/sensor-tile-osc/releases) page.
+> We assume you already have cloned this repository and you are in the corresponding folder.
 
-### macOS
+## macOS
 
-- Uncompress the `tar.xz` file into a folder of your preference.
-- Using a terminal application, remove quarantine from the `bridge.app`
+> The following instructions are intended for Apple Silicon. They might work on Intel-based machines, althought, the software is no longer tested on X86_64 architecture.
+
+- Install [Homebrew](https://brew.sh)
+- Install packages via Homebrew
 
 ```
-sudo xattr -r -d com.apple.quarantine bridge.app
+brew install python@3.11
+brew install python-tk@3.11
+brew install pyenv
+brew install pyenv-virtualenv
 ```
 
-## Build from source
+- Install Python **3.11** via Pyenv
+
+```
+PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install 3.11
+```
+
+- Create a Python virtual environment. The environment name is the following line is `nordic`. (It can have a different name).
+
+```
+PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv virtualenv 3.11 nordic
+```
+
+- Activate your environment. (If you chose a different environment name, change accordingly)
+
+```
+pyenv activate nordic
+```
+
+- Install the dependencies
+
+```
+pip install -r requirements.txt
+```
+
+- Run from the command line
+
+```
+python metabow_bridge.py
+```
 
 ### Windows
 
@@ -45,6 +78,19 @@ pyi-makespec --onefile --windowed metabow_bridge.py
 
 ```
 pyinstaller --clean metabow_bridge.spec --noconfirm
+```
+
+## Installation
+
+Download the compressed file accordingly from the [Releases](https://github.com/pauloesteban/sensor-tile-osc/releases) page.
+
+### macOS
+
+- Uncompress the `tar.xz` file into a folder of your preference.
+- Using a terminal application, remove quarantine from the `bridge.app`
+
+```
+sudo xattr -r -d com.apple.quarantine bridge.app
 ```
 
 #### EV Signing
