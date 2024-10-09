@@ -1,5 +1,5 @@
 # metabow.toml
 
 [device]
-name = "AM1V330"
-characteristic-uuid = "00E00000-0001-11E1-AC36-0002A5D5C51B"
+name = "metabow"
+characteristic-uuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"

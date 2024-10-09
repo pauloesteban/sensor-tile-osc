@@ -7,6 +7,7 @@
 
 import asyncio
 import csv
+import struct
 import threading
 import tomllib
 import tkinter as tk
@@ -20,7 +21,6 @@ from bleak import (
     BleakScanner,
 )
 from bleak.exc import BleakError
-
 from pythonosc import udp_client
 from gesture_model import GestureModel
 from utils import bytearray_to_fusion_data, log_file_path, pyquaternion_as_spherical_coords
@@ -68,7 +68,7 @@ class Window(tk.Tk):
         self.configuration_dict = tomllib.loads(self.configuration_path.read_text())
         self.characteristic_uuid = self.configuration_dict['device']['characteristic-uuid']
         self.device_name = self.configuration_dict['device']['name']
-        self.AM1V330_devices = {}
+        self.IMU_devices = {}
         self.model = GestureModel()
         self._instantiate_scanner()
         self.csv_header = [
@@ -100,6 +100,11 @@ class Window(tk.Tk):
             'accl_tilt',
             'accl_roll'
         ]
+        self.DATA_POINT_SIZE = 4  # NOTE: Corresponds to floating-point standard size in bytes
+        self.NORDIC_IMU_SENSOR_DATA_POINTS = 13
+        self.NORDIC_IMU_SENSOR_DATA_LEN = self.NORDIC_IMU_SENSOR_DATA_POINTS * self.DATA_POINT_SIZE
+        self.NORDIC_IMU_FLAG_SIZE = 1
+        self.NORDIC_IMU_PACK_FORMAT = 'f' * self.NORDIC_IMU_SENSOR_DATA_POINTS
 
 
     def _instantiate_scanner(self):
@@ -168,7 +173,7 @@ class Window(tk.Tk):
     def items_selected(self, event):
         selected_ix = self.devices_listbox.curselection()
         selected_devices_keys = [self.devices_listbox.get(i) for i in selected_ix]
-        self.selected_devices = [self.AM1V330_devices[i] for i in selected_devices_keys]
+        self.selected_devices = [self.IMU_devices[i] for i in selected_devices_keys]
 
 
     def create_scanner_frame(self, container):
@@ -221,7 +226,7 @@ class Window(tk.Tk):
 
     async def device_detected(self, device, _):
         if device.name == self.device_name:
-            self.AM1V330_devices[device.address] = device  # bleak.backends.device.BLEDevice
+            self.IMU_devices[device.address] = device  # bleak.backends.device.BLEDevice
         await asyncio.sleep(1.0)
 
 
@@ -257,15 +262,31 @@ class Window(tk.Tk):
         self.devices_listbox.config(state=tk.DISABLED)
         self.monitoring_label.state(['!disabled'])
         self._create_csv_file()
-        await asyncio.gather(*(self.notify(i, device) for i, device in enumerate(self.selected_devices)))
+        await asyncio.gather(*(self.notify_nordic(i, device) for i, device in enumerate(self.selected_devices)))
+
+
+    async def notify_nordic(self, i, device):
+        """
+        This is similar as self.notify except it has not been tested for simultaneous devices
+        """
+        async with BleakClient(device) as client:
+            while not client.is_connected:
+                await asyncio.sleep(0.1)
+            if self.option_address.get() == "0":
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler_for_nordic, i))
+            elif self.option_address.get() == "1":
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler_for_nordic, str(device.address)))
+            while self.is_notify_loop:
+                await asyncio.sleep(1.0)
+            await client.stop_notify(self.characteristic_uuid)
 
 
     async def notify(self, i, device):
         async with BleakClient(device) as client:
             if self.option_address.get() == "0":
-                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler_for_nordic, i))
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, i))
             elif self.option_address.get() == "1":
-                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler_for_nordic, str(device.address)))
+                await client.start_notify(self.characteristic_uuid, partial(self.notification_handler, str(device.address)))
             while self.is_notify_loop:
                 await asyncio.sleep(1.0)
             await client.stop_notify(self.characteristic_uuid)
@@ -282,10 +303,19 @@ class Window(tk.Tk):
         await asyncio.sleep(1.0)
 
 
-    def notification_handler_for_nordic(self, device_number: int | str, sender: int, data: bytearray):
-        """Used as a proof-of-concept
+    async def notification_handler_for_nordic(self, device_number: int | str, sender: int, data: bytearray):
         """
-        print(len(data))
+        Async callback for Nordic IMU
+        """
+        DATA_LEN = len(data)  # TODO: Once the value is fixed on the board, assign as a constant in the constructor
+        UPPER_LIMIT = DATA_LEN - self.NORDIC_IMU_FLAG_SIZE
+        sensor_data_unpacked = struct.unpack(
+            self.NORDIC_IMU_PACK_FORMAT,
+            data[UPPER_LIMIT - self.NORDIC_IMU_SENSOR_DATA_LEN:UPPER_LIMIT]
+        )
+        address_raw = f"/{device_number}/raw"
+        self.udp_client.send_message(address_raw, sensor_data_unpacked)
+        await asyncio.sleep(0.1)
     
 
     def notification_handler(self, device_number: int | str, sender: int, data: bytearray):
@@ -366,10 +396,10 @@ class Window(tk.Tk):
 
 
     def populate_devices(self):
-        if len(self.AM1V330_devices):
+        if len(self.IMU_devices):
             self.devices_listbox.delete(0, 'end')
 
-            for k, v in self.AM1V330_devices.items():
+            for k, v in self.IMU_devices.items():
                 self.devices_listbox.insert('end', k)
 
 

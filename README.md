@@ -16,6 +16,7 @@ Cross-platform application to pair "Metabow IMU" to send sensor data via OSC (Op
 ```
 brew install python@3.11
 brew install python-tk@3.11
+brew install tcl-tk
 brew install pyenv
 brew install pyenv-virtualenv
 ```
