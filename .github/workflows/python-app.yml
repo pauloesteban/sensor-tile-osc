@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
           draft: false
@@ -38,10 +38,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
@@ -63,7 +63,7 @@ jobs:
       #   run: tar -czf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ .
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create_release.outputs.tag-name }}
           files: metabow_bridge_${{ matrix.release_suffix }}
