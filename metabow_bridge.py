@@ -315,14 +315,18 @@ class Window(tk.Tk):
         """
         Async callback for Nordic IMU
         """
-        DATA_LEN = len(data)  # TODO: Once the value is fixed on the board, assign as a constant in the constructor
-        UPPER_LIMIT = DATA_LEN - self.NORDIC_IMU_FLAG_SIZE
-        sensor_data_unpacked = struct.unpack(
-            self.NORDIC_IMU_PACK_FORMAT,
-            data[UPPER_LIMIT - self.NORDIC_IMU_SENSOR_DATA_LEN:UPPER_LIMIT]
-        )
-        address_raw = f"/{device_number}/raw"
-        self.udp_client.send_message(address_raw, sensor_data_unpacked)
+        data_len = len(data)  # TODO: Once the value is fixed on the board, assign as a constant in the constructor
+        upper_limit = data_len - self.NORDIC_IMU_FLAG_SIZE
+        lower_limit = upper_limit - self.NORDIC_IMU_SENSOR_DATA_LEN
+
+        if data[upper_limit] == 1:  # NOTE: We check the flag value
+            sensor_data_unpacked = struct.unpack(
+                self.NORDIC_IMU_PACK_FORMAT,
+                data[lower_limit:upper_limit]
+            )
+            address_raw = f"/{device_number}/raw"
+            self.udp_client.send_message(address_raw, sensor_data_unpacked)
+        
         await asyncio.sleep(0.1)
     
 

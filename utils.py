@@ -7,7 +7,8 @@
 import quaternion
 from datetime import datetime
 from os import makedirs
-from os.path import expandvars, isdir, join
+from os.path import expandvars, isdir
+from pathlib import Path
 from platform import system
 from typing import ByteString, List
 
@@ -111,19 +112,18 @@ def _create_folder_in_desktop(dir: str):
         makedirs(dir)
 
 
-def log_file_path() -> str:
-    """
-    """
+def get_home_folder() -> str:
     if system() == "Windows":
-        homefolder = expandvars(r"$HOMEPATH")
-    else:
-        homefolder = expandvars(r"$HOME")
+        return expandvars(r"$HOMEPATH")
+    return expandvars(r"$HOME")
 
-    log_dir = join(homefolder, "Desktop", "Metabow Logs")
+
+def log_file_path() -> str:
+    log_dir = Path(get_home_folder()) / "Desktop" / "Metabow Logs"
 
     _create_folder_in_desktop(log_dir)
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = join(log_dir, f"mb_{now}.csv")
+    filename = log_dir / f"mb_{now}.csv"
 
     return filename
 
