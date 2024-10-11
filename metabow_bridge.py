@@ -65,7 +65,15 @@ class Window(tk.Tk):
         self.is_notify_loop = False
         self.is_destroyed = False
         self.configuration_path = Path("metabow.toml")
-        self.configuration_dict = tomllib.loads(self.configuration_path.read_text())
+        try:
+            self.configuration_dict = tomllib.loads(self.configuration_path.read_text())
+        except Exception as e:
+            self.configuration_dict = {
+                'device': {
+                    'characteristic-uuid': "6e400003-b5a3-f393-e0a9-e50e24dcca9e",
+                    'name': "metabow"
+                    }
+                }
         self.characteristic_uuid = self.configuration_dict['device']['characteristic-uuid']
         self.device_name = self.configuration_dict['device']['name']
         self.IMU_devices = {}

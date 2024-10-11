@@ -49,14 +49,14 @@ jobs:
         run: |
           pip install -U wheel pip setuptools
           pip install -r requirements.txt
-          pip install -U "pyinstaller<5.14,>=5.5"
+          pip install -U "pyinstaller<6.11,>=5.13.2"
 
       - name: Build executable
         run: pyinstaller --clean metabow_bridge.spec --noconfirm
 
       - name: Mac archive and compress
         if: matrix.os == 'macos-latest'
-        run: tar -cJf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ bridge.app
+        run: tar -cJf metabow_bridge_${{ matrix.release_suffix }} -C ${{ runner.workspace }}/sensor-tile-osc/dist/ metabow_bridge.app
 
       # - name: Windows archive and compress
       #   if: matrix.os == 'windows-latest'

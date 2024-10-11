@@ -66,13 +66,28 @@ choco install python311
 
 ```
 python -m pip install -r requirements.txt
-python -m pip install -U "pyinstaller<5.14,>=5.5"
+python -m pip install -U "pyinstaller<6.11,>=5.13.2"
 ```
 
 - Make the PyInstaller spec file
 
 ```
-pyi-makespec --onefile --windowed metabow_bridge.py
+pyi-makespec --add-data "metabow.toml:." --onefile --windowed metabow_bridge.py
+```
+
+For macOS, you have to overwrite the BUNDLE call to have something similar to:
+
+```
+app = BUNDLE(
+    coll,
+    name='metabow_bridge.app',
+    icon=None,
+    bundle_identifier='com.metabow.bridge',
+    version='1.5.0',
+    info_plist={
+        'NSBluetoothAlwaysUsageDescription': 'This app uses Bluetooth.'
+    }
+)
 ```
 
 - Build the executable
@@ -94,7 +109,7 @@ Download the compressed file accordingly from the [Releases](https://github.com/
 sudo xattr -r -d com.apple.quarantine bridge.app
 ```
 
-#### EV Signing
+## EV Signing (Windows)
 
 ```
 signtool sign /tr http://timestamp.sectigo.com /td sha256 /a sensor-tile-osc\dist\metabow_bridge.exe
