@@ -311,7 +311,7 @@ class Window(tk.Tk):
         await asyncio.sleep(1.0)
 
 
-    async def notification_handler_for_nordic(self, device_number: int | str, sender: int, data: bytearray):
+    def notification_handler_for_nordic(self, device_number: int | str, sender: int, data: bytearray):
         """
         Async callback for Nordic IMU
         """
@@ -326,8 +326,6 @@ class Window(tk.Tk):
             )
             address_raw = f"/{device_number}/raw"
             self.udp_client.send_message(address_raw, sensor_data_unpacked)
-        
-        await asyncio.sleep(0.1)
     
 
     def notification_handler(self, device_number: int | str, sender: int, data: bytearray):
